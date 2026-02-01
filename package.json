@@ -1,0 +1,16 @@
+{
+  "name": "rental-pms-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:server": "yarn workspace @rental/server dev",
+    "dev:client": "yarn workspace @rental/client dev",
+    "build": "yarn workspaces run build",
+    "lint": "yarn workspaces run lint"
+  },
+  "license": "MIT"
+}

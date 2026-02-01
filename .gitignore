@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+.yarn/cache
+
+# Environment variables (SECURITY RISK)
+.env
+.env.*
+
+# Build outputs
+dist
+build
+coverage
+
+# IDEs & OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log
