@@ -2,8 +2,10 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 /**
- * Utility function to merge Tailwind classes cleanly.
- * It resolves conflicts (e.g., 'bg-red-500' overrides 'bg-blue-500').
+ * Merges Tailwind classes conditionally and resolves conflicts.
+ * Essential for building reusable UI components.
+ * * @param inputs - List of classes or conditional objects
+ * @returns Clean merged string of classes
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
