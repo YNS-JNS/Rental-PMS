@@ -1,20 +1,17 @@
 import app from './app';
-import dotenv from 'dotenv';
+import { env } from './config/env';
+import { connectDB } from './config/database';
 
-// Load environment variables
-dotenv.config();
-
-const PORT = process.env.PORT || 5000;
-
-// Start the Server
+// 1. Validate Env & 2. Connect to Database
 const startServer = async () => {
   try {
-    // Future: Connect to MongoDB here
-    // await connectDB();
+    // Connect to MongoDB
+    await connectDB();
 
-    app.listen(PORT, () => {
-      console.log(`\n✅ Server is running on http://localhost:${PORT}`);
-      console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}\n`);
+    // Start Express Server
+    app.listen(env.PORT, () => {
+      console.log(`\n✅ Server is running on http://localhost:${env.PORT}`);
+      console.log(`📝 Environment: ${env.NODE_ENV}`);
     });
   } catch (error) {
     console.error('❌ Error starting server:', error);
