@@ -2,6 +2,8 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
 // Import Routes
 import authRoutes from './modules/auth/auth.routes';
@@ -23,6 +25,11 @@ app.use(express.json());
 // Logger (Morgan) - Logs HTTP requests to the console
 app.use(morgan('dev'));
 
+// --- Documentation (Swagger) ---
+// Available at http://localhost:5000/api/docs
+// Fix: We cast 'swaggerUi.serve' to 'any' to avoid TypeScript version mismatch
+// between @types/express and swagger-ui-express internal types.
+app.use('/api/docs', swaggerUi.serve as any, swaggerUi.setup(swaggerSpec) as any);
 
 // --- Routes ---
 
