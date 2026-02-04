@@ -7,6 +7,7 @@ import { swaggerSpec } from './config/swagger';
 
 // Import Routes
 import authRoutes from './modules/auth/auth.routes';
+import apartmentRoutes from './modules/apartments/apartment.routes';
 
 const app: Application = express();
 
@@ -30,6 +31,7 @@ app.use(morgan('dev'));
 // Fix: We cast 'swaggerUi.serve' to 'any' to avoid TypeScript version mismatch
 // between @types/express and swagger-ui-express internal types.
 app.use('/api/docs', swaggerUi.serve as any, swaggerUi.setup(swaggerSpec) as any);
+app.use('/api/apartments', apartmentRoutes);
 
 // --- Routes ---
 

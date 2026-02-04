@@ -5,6 +5,7 @@
 
 // Export Zod Schemas & Types
 export * from './schemas/auth.schema';
+export * from './schemas/apartment.schema';
 
 // Export other shared utilities if needed
 export const sayHello = () => 'Hello from Shared Package!';
