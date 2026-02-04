@@ -1,32 +1,33 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/app/hooks';
 import { selectCurrentToken } from '@/features/auth/authSlice';
+import { Sidebar } from './Sidebar';
+import Header from './Header';
 
-/**
- * PROTECTED LAYOUT (Route Guard)
- * Acts as a gatekeeper for private routes.
- * * Logic:
- * 1. Checks for a valid token in the Redux store.
- * 2. If present: Renders the child routes (Outlet).
- * 3. If missing: Redirects to /login, preserving the attempted location in state.
- */
 export default function ProtectedLayout() {
   const token = useAppSelector(selectCurrentToken);
   const location = useLocation();
 
+  // 1. Security Check
   if (!token) {
-    // Redirect them to the /login page, but save the current location they were
-    // trying to go to when they were redirected. This allows us to send them
-    // along to that page after they login, which is a nicer user experience.
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // 2. Layout Structure
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Later, we will add the Sidebar and Header here.
-        For now, we just render the content.
-      */}
-      <Outlet />
+    <div className="flex min-h-screen flex-col md:flex-row">
+      {/* Sidebar - Hidden on mobile, Visible on Desktop (md) */}
+      <aside className="hidden md:flex w-64 flex-col border-r bg-gray-50/40">
+        <Sidebar />
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="flex-1 space-y-4 p-8 pt-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
