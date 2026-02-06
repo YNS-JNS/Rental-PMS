@@ -9,15 +9,17 @@ export const ApartmentSchema = z.object({
   description: z.string().optional(),
   address: z.string().min(5, { message: "Address is required" }),
   price: z.number().positive({ message: "Price must be positive" }),
-  status: ApartmentStatus.default('AVAILABLE'),
-  images: z.array(z.string().url()).optional(), // URLs from Cloudinary
-  facilities: z.array(z.string()).optional(), // e.g. ["WiFi", "Parking"]
+  // FIX: Removed .default('AVAILABLE') to satisfy React Hook Form strict typing.
+  // The default value is now handled solely by the UI form state.
+  status: ApartmentStatus, 
+  images: z.array(z.string().url()).optional(),
+  facilities: z.array(z.string()).optional(),
 });
 
 // Type Inference for Frontend Forms
 export type ApartmentInput = z.infer<typeof ApartmentSchema>;
 
-// Interface for Database Object (includes Mongoose fields)
+// Interface for Database Object
 export interface IApartment extends ApartmentInput {
   _id: string;
   createdAt: string;
