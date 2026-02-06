@@ -1,12 +1,19 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useGetApartmentQuery } from '@/features/apartments/apartmentsApiSlice';
-import { ArrowLeft, Pencil, MapPin, Building2, Wifi, Car, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Pencil, MapPin, Building2, CheckCircle2 } from 'lucide-react';
 
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function ApartmentDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +32,8 @@ export default function ApartmentDetailsPage() {
     </div>
   );
 
+  const hasImages = apartment.images && apartment.images.length > 0;
+
   return (
     <div className="space-y-6">
       {/* Header Navigation */}
@@ -33,10 +42,17 @@ export default function ApartmentDetailsPage() {
           <Button variant="outline" size="icon" onClick={() => navigate('/apartments')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-2xl font-bold tracking-tight">{apartment.name}</h2>
-          <Badge variant={apartment.status === 'AVAILABLE' ? 'default' : 'secondary'}>
-            {apartment.status}
-          </Badge>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">{apartment.name}</h2>
+            <div className="flex items-center space-x-2 mt-1">
+               <Badge variant={apartment.status === 'AVAILABLE' ? 'default' : 'secondary'}>
+                {apartment.status}
+              </Badge>
+              <span className="text-sm text-muted-foreground hidden md:inline-block">
+                ID: {apartment._id}
+              </span>
+            </div>
+          </div>
         </div>
         <Button asChild>
           <Link to={`/apartments/${apartment._id}/edit`}>
@@ -46,24 +62,40 @@ export default function ApartmentDetailsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Left Column: Image & Key Info */}
+        {/* Left Column: Image Gallery */}
         <div className="space-y-6">
-          <Card className="overflow-hidden">
-            <div className="aspect-video w-full bg-slate-100 flex items-center justify-center">
-               {/* Static Image Logic for now */}
-               {apartment.images && apartment.images.length > 0 ? (
-                 <img 
-                   src={apartment.images[0]} 
-                   alt={apartment.name} 
-                   className="w-full h-full object-cover"
-                 />
-               ) : (
-                 <div className="flex flex-col items-center text-muted-foreground">
-                   <Building2 className="h-16 w-16 mb-2 opacity-20" />
-                   <span>No Image Available</span>
-                 </div>
-               )}
-            </div>
+          <Card className="overflow-hidden border-none shadow-none bg-transparent">
+            {hasImages ? (
+               <Carousel className="w-full">
+                 <CarouselContent>
+                   {apartment.images!.map((image, index) => (
+                     <CarouselItem key={index}>
+                       <div className="p-1">
+                         <div className="aspect-video relative overflow-hidden rounded-xl border bg-slate-100">
+                           <img 
+                             src={image} 
+                             alt={`${apartment.name} view ${index + 1}`} 
+                             className="object-cover w-full h-full"
+                           />
+                         </div>
+                       </div>
+                     </CarouselItem>
+                   ))}
+                 </CarouselContent>
+                 {/* Show navigation arrows only if more than 1 image */}
+                 {apartment.images!.length > 1 && (
+                   <>
+                     <CarouselPrevious className="left-2" />
+                     <CarouselNext className="right-2" />
+                   </>
+                 )}
+               </Carousel>
+            ) : (
+              <div className="aspect-video w-full bg-slate-100 flex flex-col items-center justify-center rounded-xl border text-muted-foreground">
+                <Building2 className="h-16 w-16 mb-2 opacity-20" />
+                <span>No Images Available</span>
+              </div>
+            )}
           </Card>
 
           <Card>
@@ -73,7 +105,7 @@ export default function ApartmentDetailsPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Monthly Rent</span>
-                <span className="text-xl font-bold text-primary">
+                <span className="text-2xl font-bold text-primary">
                   ${apartment.price.toLocaleString()}
                 </span>
               </div>
