@@ -9,6 +9,10 @@ import ApartmentsPage from '@/pages/apartments/ApartmentsPage';
 import NewApartmentPage from '@/pages/apartments/NewApartmentPage';
 import ApartmentDetailsPage from '@/pages/apartments/ApartmentDetailsPage';
 import EditApartmentPage from '@/pages/apartments/EditApartmentPage';
+import TenantsPage from '@/pages/tenants/TenantsPage';
+import NewTenantPage from '@/pages/tenants/NewTenantPage';
+import TenantDetailsPage from '@/pages/tenants/TenantDetailsPage';
+import EditTenantPage from '@/pages/tenants/EditTenantPage';
 
 function App() {
   return (
@@ -26,6 +30,12 @@ function App() {
         <Route path="/apartments/new" element={<NewApartmentPage />} />
         <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />
         <Route path="/apartments/:id/edit" element={<EditApartmentPage />} />
+        
+        {/* Tenant Routes */}
+        <Route path="/tenants" element={<TenantsPage />} />
+        <Route path="/tenants/new" element={<NewTenantPage />} />
+        <Route path="/tenants/:id" element={<TenantDetailsPage />} />
+        <Route path="/tenants/:id/edit" element={<EditTenantPage />} />
         
       </Route>
 

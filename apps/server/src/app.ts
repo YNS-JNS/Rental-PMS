@@ -8,6 +8,7 @@ import { swaggerSpec } from './config/swagger';
 // Import Routes
 import authRoutes from './modules/auth/auth.routes';
 import apartmentRoutes from './modules/apartments/apartment.routes';
+import tenantRoutes from './modules/tenants/tenant.routes';
 
 const app: Application = express();
 
@@ -46,5 +47,6 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/tenants', tenantRoutes);
 
 export default app;
