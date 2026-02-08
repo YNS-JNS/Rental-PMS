@@ -27,5 +27,5 @@ export const apiSlice = createApi({
   }),
   // Tag Types are used for caching invalidation (Automatic refetching)
   tagTypes: ['User', 'Apartment', 'Booking'],
-  endpoints: (builder) => ({}), // Endpoints are injected in feature slices
+  endpoints: (_builder) => ({}), // Endpoints are injected in feature slices
 });

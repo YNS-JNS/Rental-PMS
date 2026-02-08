@@ -25,7 +25,7 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
     // GET Single Apartment
     getApartment: builder.query<IApartment, string>({
       query: (id) => `/apartments/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Apartment', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Apartment', id }],
     }),
 
     // CREATE Apartment
@@ -46,7 +46,7 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'Apartment', id },
         { type: 'Apartment', id: 'LIST' },
       ],
@@ -58,7 +58,7 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
         url: `/apartments/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_result, _error, id) => [
         { type: 'Apartment', id },
         { type: 'Apartment', id: 'LIST' },
       ],

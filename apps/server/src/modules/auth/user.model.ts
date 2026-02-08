@@ -1,12 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
-
-// Define User Roles strictly
-export enum UserRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
-  STAFF = 'STAFF',
-}
+import { UserRole } from '@rental/shared';
 
 // Interface for TypeScript (extends Mongoose Document)
 export interface IUser extends Document {
