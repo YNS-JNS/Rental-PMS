@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Calendar } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Calendar as CalendarIcon, List } from 'lucide-react';
 import { useGetBookingsQuery, useDeleteBookingMutation } from '@/features/bookings/bookingsApiSlice';
 import type { IBooking } from '@rental/shared';
 
@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Custom Components
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import { BookingsCalendar } from '@/features/bookings/components/BookingsCalendar';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -53,8 +54,11 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   COMPLETED: { label: 'Completed', variant: 'secondary' },
 };
 
+type ViewMode = 'list' | 'calendar';
+
 export default function BookingsPage() {
   const { toast } = useToast();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [bookingIdToDelete, setBookingIdToDelete] = useState<string | null>(null);
 
@@ -117,8 +121,8 @@ export default function BookingsPage() {
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-4">
+        {/* Filters + View Toggle */}
+        <div className="flex items-center justify-between gap-4">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
@@ -131,100 +135,130 @@ export default function BookingsPage() {
               <SelectItem value="COMPLETED">Completed</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center rounded-lg border border-border p-1 gap-1">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="gap-2"
+            >
+              <List className="h-4 w-4" />
+              List
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('calendar')}
+              className="gap-2"
+            >
+              <CalendarIcon className="h-4 w-4" />
+              Calendar
+            </Button>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>All Bookings</CardTitle>
-            <CardDescription>
-              A list of all reservations. Use the actions menu to manage each booking.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Apartment</TableHead>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead className="hidden md:table-cell">Dates</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden lg:table-cell text-right">Price</TableHead>
-                  <TableHead className="w-[80px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookings?.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                      No bookings found. <br />
-                      <Link to="/bookings/new" className="text-primary hover:underline">
-                        Create your first booking
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                )}
+        {/* Calendar View */}
+        {viewMode === 'calendar' && bookings && (
+          <BookingsCalendar bookings={bookings} />
+        )}
 
-                {bookings?.map((booking: IBooking) => {
-                  const config = statusConfig[booking.status] || statusConfig.PENDING;
-                  return (
-                    <TableRow key={booking._id}>
-                      <TableCell className="font-medium">
-                        {getApartmentName(booking)}
-                      </TableCell>
-                      <TableCell>
-                        {getTenantName(booking)}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(booking.startDate)} → {formatDate(booking.endDate)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={config.variant}>
-                          {config.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-right font-medium">
-                        {booking.totalPrice.toLocaleString()} MAD
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                              <Link to={`/bookings/${booking._id}`}>
-                                <Eye className="mr-2 h-4 w-4" /> View Details
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link to={`/bookings/${booking._id}/edit`}>
-                                <Pencil className="mr-2 h-4 w-4" /> Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600 cursor-pointer"
-                              onClick={() => setBookingIdToDelete(booking._id)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Cancel Booking
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+        {/* List View */}
+        {viewMode === 'list' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>All Bookings</CardTitle>
+              <CardDescription>
+                A list of all reservations. Use the actions menu to manage each booking.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Apartment</TableHead>
+                    <TableHead>Tenant</TableHead>
+                    <TableHead className="hidden md:table-cell">Dates</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden lg:table-cell text-right">Price</TableHead>
+                    <TableHead className="w-[80px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookings?.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                        No bookings found. <br />
+                        <Link to="/bookings/new" className="text-primary hover:underline">
+                          Create your first booking
+                        </Link>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  )}
+
+                  {bookings?.map((booking: IBooking) => {
+                    const config = statusConfig[booking.status] || statusConfig.PENDING;
+                    return (
+                      <TableRow key={booking._id}>
+                        <TableCell className="font-medium">
+                          {getApartmentName(booking)}
+                        </TableCell>
+                        <TableCell>
+                          {getTenantName(booking)}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <CalendarIcon className="h-3 w-3" />
+                            {formatDate(booking.startDate)} → {formatDate(booking.endDate)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={config.variant}>
+                            {config.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-right font-medium">
+                          {booking.totalPrice.toLocaleString()} MAD
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem asChild>
+                                <Link to={`/bookings/${booking._id}`}>
+                                  <Eye className="mr-2 h-4 w-4" /> View Details
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link to={`/bookings/${booking._id}/edit`}>
+                                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 cursor-pointer"
+                                onClick={() => setBookingIdToDelete(booking._id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" /> Cancel Booking
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Confirmation Modal */}
