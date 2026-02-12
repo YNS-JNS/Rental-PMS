@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useGetApartmentQuery } from '@/features/apartments/apartmentsApiSlice';
 import { ArrowLeft, Pencil, MapPin, Building2, CheckCircle2 } from 'lucide-react';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -106,7 +107,7 @@ export default function ApartmentDetailsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Monthly Rent</span>
                 <span className="text-2xl font-bold text-primary">
-                  ${apartment.price.toLocaleString()}
+                  {formatCurrency(apartment.price)}
                 </span>
               </div>
               <Separator />
