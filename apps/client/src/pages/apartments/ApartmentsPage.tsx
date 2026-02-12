@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Building2 } from 'lucide-react';
 import { useGetApartmentsQuery, useDeleteApartmentMutation } from '@/features/apartments/apartmentsApiSlice';
+import { formatCurrency } from '@/lib/formatCurrency';
 import { IApartment } from '@rental/shared';
 
 // Hooks
@@ -87,10 +88,7 @@ export default function ApartmentsPage() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'MAD',
-    }).format(price);
+    return formatCurrency(price);
   };
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading properties...</div>;

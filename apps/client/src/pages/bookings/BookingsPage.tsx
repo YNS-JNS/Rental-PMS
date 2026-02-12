@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Calendar as CalendarIcon, List } from 'lucide-react';
 import { useGetBookingsQuery, useDeleteBookingMutation } from '@/features/bookings/bookingsApiSlice';
 import type { IBooking } from '@rental/shared';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 // Hooks
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +53,12 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   PENDING: { label: 'Pending', variant: 'outline' },
   CANCELLED: { label: 'Cancelled', variant: 'destructive' },
   COMPLETED: { label: 'Completed', variant: 'secondary' },
+};
+
+const paymentStatusConfig: Record<string, { label: string; className: string }> = {
+  PAID: { label: 'Paid', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
+  PARTIALLY_PAID: { label: 'Partial', className: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' },
+  UNPAID: { label: 'Unpaid', className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
 };
 
 type ViewMode = 'list' | 'calendar';
@@ -181,6 +188,7 @@ export default function BookingsPage() {
                     <TableHead>Tenant</TableHead>
                     <TableHead className="hidden md:table-cell">Dates</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Payment</TableHead>
                     <TableHead className="hidden lg:table-cell text-right">Price</TableHead>
                     <TableHead className="w-[80px]"></TableHead>
                   </TableRow>
@@ -188,7 +196,7 @@ export default function BookingsPage() {
                 <TableBody>
                   {bookings?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                         No bookings found. <br />
                         <Link to="/bookings/new" className="text-primary hover:underline">
                           Create your first booking
@@ -218,8 +226,14 @@ export default function BookingsPage() {
                             {config.label}
                           </Badge>
                         </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {(() => {
+                            const pConfig = paymentStatusConfig[booking.paymentStatus || 'UNPAID'];
+                            return <Badge className={pConfig.className}>{pConfig.label}</Badge>;
+                          })()}
+                        </TableCell>
                         <TableCell className="hidden lg:table-cell text-right font-medium">
-                          {booking.totalPrice.toLocaleString()} MAD
+                          {formatCurrency(booking.totalPrice)}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>

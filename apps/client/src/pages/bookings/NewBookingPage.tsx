@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useCreateBookingMutation } from '@/features/bookings/bookingsApiSlice';
 import { useGetApartmentsQuery } from '@/features/apartments/apartmentsApiSlice';
 import { useGetTenantsQuery } from '@/features/tenants/tenantsApiSlice';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 // Hooks
 import { useToast } from '@/hooks/use-toast';
@@ -269,8 +270,8 @@ export default function NewBookingPage() {
                   <Info className="h-4 w-4" />
                   <AlertDescription>
                     <strong>{priceEstimate.apartmentName}</strong>: {priceEstimate.nights} night{priceEstimate.nights > 1 ? 's' : ''} ×{' '}
-                    {priceEstimate.pricePerNight.toLocaleString()} MAD ={' '}
-                    <strong>{priceEstimate.total.toLocaleString()} MAD</strong>
+                    {formatCurrency(priceEstimate.pricePerNight)} ={' '}
+                    <strong>{formatCurrency(priceEstimate.total)}</strong>
                   </AlertDescription>
                 </Alert>
               )}
