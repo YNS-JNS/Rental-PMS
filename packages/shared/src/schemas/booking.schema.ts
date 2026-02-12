@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { PaymentStatusType } from './finance.schema';
 
 /**
  * Booking Status Enum
@@ -58,6 +59,8 @@ export interface IBooking {
   totalPrice: number;
   guestCount: number;
   notes?: string;
+  paymentStatus: PaymentStatusType;
+  totalPaid: number;
   createdAt: string;
   updatedAt: string;
 }

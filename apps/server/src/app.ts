@@ -10,6 +10,7 @@ import authRoutes from './modules/auth/auth.routes';
 import apartmentRoutes from './modules/apartments/apartment.routes';
 import tenantRoutes from './modules/tenants/tenant.routes';
 import bookingRoutes from './modules/bookings/booking.routes';
+import paymentRoutes from './modules/finance/finance.routes';
 
 const app: Application = express();
 
@@ -50,5 +51,6 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/payments', paymentRoutes);
 
 export default app;

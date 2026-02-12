@@ -4,6 +4,7 @@ import { env } from '../config/env';
 import { Apartment } from '../modules/apartments/apartment.model';
 import { Tenant } from '../modules/tenants/tenant.model';
 import { Booking } from '../modules/bookings/booking.model';
+import { Payment } from '../modules/finance/payment.model';
 
 // Load environment variables
 dotenv.config();
@@ -165,17 +166,11 @@ function generateBookings(
   const bookings: any[] = [];
   const now = new Date();
 
-  // Define time ranges
   const ranges = [
-    // Past month (COMPLETED)
     { offsetStart: -45, offsetEnd: -15, status: 'COMPLETED', count: 8 },
-    // Current period (CONFIRMED — active now or starting soon)
     { offsetStart: -5, offsetEnd: 20, status: 'CONFIRMED', count: 6 },
-    // Near future (CONFIRMED)
     { offsetStart: 15, offsetEnd: 50, status: 'CONFIRMED', count: 6 },
-    // Far future (PENDING)
     { offsetStart: 40, offsetEnd: 75, status: 'PENDING', count: 5 },
-    // A few cancelled ones
     { offsetStart: -30, offsetEnd: 60, status: 'CANCELLED', count: 3 },
   ];
 
@@ -186,24 +181,17 @@ function generateBookings(
     while (created < range.count && attempts < range.count * 5) {
       attempts++;
 
-      // Random apartment
       const aptIndex = Math.floor(Math.random() * apartmentIds.length);
       const apartmentId = apartmentIds[aptIndex];
       const pricePerNight = apartmentPrices[aptIndex];
-
-      // Random tenant
       const tenantId = tenantIds[Math.floor(Math.random() * tenantIds.length)];
 
-      // Random start within the range window
       const rangeSpan = range.offsetEnd - range.offsetStart;
       const startOffset = range.offsetStart + Math.floor(Math.random() * (rangeSpan - 3));
       const startDate = addDays(now, startOffset);
-
-      // Random duration: 3-10 nights
       const nights = 3 + Math.floor(Math.random() * 8);
       const endDate = addDays(startDate, nights);
 
-      // Check overlap (skip CANCELLED — they don't block availability)
       if (range.status !== 'CANCELLED' && hasOverlap(bookings, apartmentId, startDate, endDate)) {
         continue;
       }
@@ -220,6 +208,9 @@ function generateBookings(
         totalPrice,
         guestCount,
         notes: range.status === 'CANCELLED' ? 'Cancelled by guest.' : '',
+        // Payment fields default (UNPAID, 0) — updated later for some bookings
+        paymentStatus: 'UNPAID',
+        totalPaid: 0,
       });
 
       created++;
@@ -227,6 +218,84 @@ function generateBookings(
   }
 
   return bookings;
+}
+
+// ============================================
+// PAYMENT GENERATION HELPERS
+// ============================================
+
+const paymentMethods = ['CASH', 'BANK_TRANSFER', 'CHECK', 'OTHER'] as const;
+
+/**
+ * Generate sample payments for ~50% of COMPLETED and CONFIRMED bookings.
+ * Returns payment docs and booking updates.
+ */
+function generatePayments(bookings: any[]) {
+  const payments: any[] = [];
+  const bookingUpdates: { id: any; totalPaid: number; paymentStatus: string }[] = [];
+
+  const eligibleBookings = bookings.filter(
+    (b) => b.status === 'COMPLETED' || b.status === 'CONFIRMED'
+  );
+
+  // Pick ~50% of eligible bookings
+  const toProcess = eligibleBookings.filter(() => Math.random() < 0.5);
+
+  for (const booking of toProcess) {
+    const totalPrice = booking.totalPrice;
+
+    // Decide payment scenario
+    const scenario = Math.random();
+    let paymentsForBooking: { amount: number; daysBeforeStart: number }[] = [];
+
+    if (scenario < 0.4) {
+      // Fully paid in one payment
+      paymentsForBooking = [{ amount: totalPrice, daysBeforeStart: 5 }];
+    } else if (scenario < 0.7) {
+      // Fully paid in two payments (deposit + rest)
+      const deposit = Math.round(totalPrice * 0.3);
+      paymentsForBooking = [
+        { amount: deposit, daysBeforeStart: 10 },
+        { amount: totalPrice - deposit, daysBeforeStart: 1 },
+      ];
+    } else {
+      // Partially paid (only deposit)
+      const deposit = Math.round(totalPrice * 0.3);
+      paymentsForBooking = [{ amount: deposit, daysBeforeStart: 7 }];
+    }
+
+    let totalPaid = 0;
+    for (const p of paymentsForBooking) {
+      const paymentDate = addDays(booking.startDate, -p.daysBeforeStart);
+      const method = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+      totalPaid += p.amount;
+
+      payments.push({
+        booking: booking._id,
+        amount: p.amount,
+        date: paymentDate,
+        method,
+        reference: method === 'BANK_TRANSFER' ? `VIR-${Math.floor(Math.random() * 100000)}` :
+                   method === 'CHECK' ? `CHK-${Math.floor(Math.random() * 100000)}` : '',
+        notes: '',
+      });
+    }
+
+    // Calculate status
+    let paymentStatus: string;
+    if (totalPaid >= totalPrice) {
+      paymentStatus = 'PAID';
+    } else if (totalPaid > 0) {
+      paymentStatus = 'PARTIALLY_PAID';
+    } else {
+      paymentStatus = 'UNPAID';
+    }
+
+    bookingUpdates.push({ id: booking._id, totalPaid, paymentStatus });
+  }
+
+  return { payments, bookingUpdates };
 }
 
 // ============================================
@@ -243,7 +312,8 @@ async function seed() {
     console.log('✅ Connected to MongoDB.');
 
     // 1. Clean all collections
-    console.log('🧹 Clearing existing data (Bookings, Tenants, Apartments)...');
+    console.log('🧹 Clearing existing data (Payments, Bookings, Tenants, Apartments)...');
+    await Payment.deleteMany({});
     await Booking.deleteMany({});
     await Tenant.deleteMany({});
     await Apartment.deleteMany({});
@@ -268,14 +338,49 @@ async function seed() {
     const createdBookings = await Booking.insertMany(bookingsData);
     console.log(`   ✅ ${createdBookings.length} bookings created.`);
 
+    // 5. Generate & Insert Payments
+    console.log('💰 Generating payments for ~50% of completed/confirmed bookings...');
+
+    // Attach _id to bookingsData for payment generation
+    bookingsData.forEach((b, i) => {
+      b._id = createdBookings[i]._id;
+    });
+
+    const { payments, bookingUpdates } = generatePayments(bookingsData);
+
+    if (payments.length > 0) {
+      await Payment.insertMany(payments);
+    }
+
+    // Update booking payment statuses
+    for (const update of bookingUpdates) {
+      await Booking.findByIdAndUpdate(update.id, {
+        totalPaid: update.totalPaid,
+        paymentStatus: update.paymentStatus,
+      });
+    }
+
+    console.log(`   ✅ ${payments.length} payments created.`);
+    console.log(`   ✅ ${bookingUpdates.length} bookings updated with payment status.`);
+
     // Summary
     const statusCounts = bookingsData.reduce((acc, b) => {
       acc[b.status] = (acc[b.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
+    const paymentStatusCounts = bookingUpdates.reduce((acc, u) => {
+      acc[u.paymentStatus] = (acc[u.paymentStatus] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
     console.log('\n📊 Booking Breakdown:');
     Object.entries(statusCounts).forEach(([status, count]) => {
+      console.log(`   ${status}: ${count}`);
+    });
+
+    console.log('\n💳 Payment Status Breakdown:');
+    Object.entries(paymentStatusCounts).forEach(([status, count]) => {
       console.log(`   ${status}: ${count}`);
     });
 

@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { IBooking, BookingStatusType } from '@rental/shared';
+import type { PaymentStatusType } from '@rental/shared';
 
 /**
  * Booking Document Interface
@@ -54,6 +55,16 @@ const BookingSchema = new Schema(
     notes: {
       type: String,
       trim: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['UNPAID', 'PARTIALLY_PAID', 'PAID'],
+      default: 'UNPAID',
+    },
+    totalPaid: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {
