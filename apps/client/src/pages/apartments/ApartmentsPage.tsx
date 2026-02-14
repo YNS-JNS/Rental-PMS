@@ -8,8 +8,11 @@ import { IApartment } from '@rental/shared';
 // Hooks
 import { useToast } from '@/hooks/use-toast';
 
-// Custom Components (Le Modal)
+// Custom Components
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import { PageTitle } from '@/components/common/PageTitle';
+import { EmptyState } from '@/components/common/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -91,12 +94,24 @@ export default function ApartmentsPage() {
     return formatCurrency(price);
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading properties...</div>;
-  if (isError) return <div className="p-8 text-center text-red-500">Failed to load properties.</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
+
+  if (isError) return <div className="p-8 text-center text-destructive">Failed to load properties.</div>;
 
   return (
     <>
       {/* --- PAGE CONTENT --- */}
+      <PageTitle title="Properties" />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -106,7 +121,7 @@ export default function ApartmentsPage() {
             </p>
           </div>
           <Button asChild>
-            <Link to="/apartments/new">
+            <Link to="/apartments/new" id="add-property-btn">
               <Plus className="mr-2 h-4 w-4" /> Add Property
             </Link>
           </Button>
@@ -134,11 +149,14 @@ export default function ApartmentsPage() {
               <TableBody>
                 {apartments?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                      No properties found. <br />
-                      <Link to="/apartments/new" className="text-primary hover:underline">
-                        Create your first property
-                      </Link>
+                    <TableCell colSpan={6} className="h-64 text-center">
+                      <EmptyState
+                        icon={Building2}
+                        title="No properties found"
+                        description="You probably haven't added any properties yet. Add your first property to get started."
+                        actionLabel="Add Property"
+                        onAction={() => document.getElementById('add-property-btn')?.click()}
+                      />
                     </TableCell>
                   </TableRow>
                 )}

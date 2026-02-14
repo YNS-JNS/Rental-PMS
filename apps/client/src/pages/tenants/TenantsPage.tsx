@@ -9,6 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 
 // Custom Components
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import { PageTitle } from '@/components/common/PageTitle';
+import { EmptyState } from '@/components/common/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -76,11 +79,23 @@ export default function TenantsPage() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading tenants...</div>;
-  if (isError) return <div className="p-8 text-center text-red-500">Failed to load tenants.</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
+
+  if (isError) return <div className="p-8 text-center text-destructive">Failed to load tenants.</div>;
 
   return (
     <>
+      <PageTitle title="Tenants" />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -90,7 +105,7 @@ export default function TenantsPage() {
             </p>
           </div>
           <Button asChild>
-            <Link to="/tenants/new">
+            <Link to="/tenants/new" id="add-tenant-btn">
               <Plus className="mr-2 h-4 w-4" /> Add Tenant
             </Link>
           </Button>
@@ -118,11 +133,14 @@ export default function TenantsPage() {
               <TableBody>
                 {tenants?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                      No tenants found. <br />
-                      <Link to="/tenants/new" className="text-primary hover:underline">
-                        Add your first tenant
-                      </Link>
+                    <TableCell colSpan={6} className="h-64 text-center">
+                      <EmptyState
+                        icon={Mail}
+                        title="No tenants found"
+                        description="You usually need tenants to collect rent. Add your first tenant to get started."
+                        actionLabel="Add Tenant"
+                        onAction={() => document.getElementById('add-tenant-btn')?.click()}
+                      />
                     </TableCell>
                   </TableRow>
                 )}

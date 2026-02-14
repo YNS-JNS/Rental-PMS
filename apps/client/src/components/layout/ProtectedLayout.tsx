@@ -3,6 +3,7 @@ import { useAppSelector } from '@/app/hooks';
 import { selectCurrentToken } from '@/features/auth/authSlice';
 import { Sidebar } from './Sidebar';
 import Header from './Header';
+import { Breadcrumbs } from '@/components/common/Breadcrumbs';
 
 export default function ProtectedLayout() {
   const token = useAppSelector(selectCurrentToken);
@@ -25,6 +26,7 @@ export default function ProtectedLayout() {
       <div className="flex-1 flex flex-col">
         <Header />
         <main className="flex-1 space-y-4 p-8 pt-6">
+          <Breadcrumbs />
           <Outlet />
         </main>
       </div>

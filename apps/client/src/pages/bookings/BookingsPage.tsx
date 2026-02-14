@@ -12,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 // Custom Components
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { BookingsCalendar } from '@/features/bookings/components/BookingsCalendar';
+import { PageTitle } from '@/components/common/PageTitle';
+import { EmptyState } from '@/components/common/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -108,12 +111,24 @@ export default function BookingsPage() {
     return booking.tenantId || '—';
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading bookings...</div>;
-  if (isError) return <div className="p-8 text-center text-red-500">Failed to load bookings.</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
+
+  if (isError) return <div className="p-8 text-center text-destructive">Failed to load bookings.</div>;
 
   return (
     <>
       <div className="space-y-6">
+        <PageTitle title="Bookings" />
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Bookings</h2>
@@ -122,7 +137,7 @@ export default function BookingsPage() {
             </p>
           </div>
           <Button asChild>
-            <Link to="/bookings/new">
+            <Link to="/bookings/new" id="add-booking-btn">
               <Plus className="mr-2 h-4 w-4" /> New Booking
             </Link>
           </Button>
@@ -196,11 +211,14 @@ export default function BookingsPage() {
                 <TableBody>
                   {bookings?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                        No bookings found. <br />
-                        <Link to="/bookings/new" className="text-primary hover:underline">
-                          Create your first booking
-                        </Link>
+                      <TableCell colSpan={7} className="h-64 text-center">
+                        <EmptyState
+                          icon={CalendarIcon}
+                          title="No bookings found"
+                          description="Get ready for your first guest! Create a booking to track reservations."
+                          actionLabel="New Booking"
+                          onAction={() => document.getElementById('add-booking-btn')?.click()}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
