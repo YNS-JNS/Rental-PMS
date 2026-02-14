@@ -17,6 +17,7 @@ import BookingsPage from '@/pages/bookings/BookingsPage';
 import NewBookingPage from '@/pages/bookings/NewBookingPage';
 import BookingDetailsPage from '@/pages/bookings/BookingDetailsPage';
 import EditBookingPage from '@/pages/bookings/EditBookingPage';
+import NotFoundPage from '@/pages/NotFoundPage';
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
 
       {/* Default Redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

@@ -12,6 +12,7 @@ import {
 // UI Components
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { PageTitle } from '@/components/common/PageTitle';
 
 // Dashboard Widgets
 import { StatCard } from '@/features/dashboard/components/StatCard';
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <PageTitle title="Dashboard Error" />
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
           <AlertTriangle className="h-8 w-8 text-destructive" />
         </div>
@@ -48,6 +50,7 @@ export default function DashboardPage() {
   if (isLoading || !stats) {
     return (
       <div className="space-y-6">
+        <PageTitle title="Dashboard" />
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
 
         {/* KPI Skeletons */}
@@ -94,6 +97,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="Dashboard" />
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>

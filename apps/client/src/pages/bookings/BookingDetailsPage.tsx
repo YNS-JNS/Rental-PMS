@@ -17,6 +17,7 @@ import { formatCurrency } from '@/lib/formatCurrency';
 // Custom Components
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { NewPaymentModal } from '@/features/finance/components/NewPaymentModal';
+import { PageTitle } from '@/components/common/PageTitle';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -132,6 +133,7 @@ export default function BookingDetailsPage() {
 
   return (
     <>
+      <PageTitle title={`Booking ${getApartmentName(booking)}`} />
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
