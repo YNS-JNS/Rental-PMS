@@ -3,38 +3,25 @@ import { IUserPublic } from '@rental/shared';
 
 interface AuthState {
   user: IUserPublic | null;
-  token: string | null;
+  isAuthenticated: boolean;
 }
 
-// Initialize state from localStorage (Persistence)
-const tokenFromStorage = localStorage.getItem('token');
-const userFromStorage = localStorage.getItem('user');
-
 const initialState: AuthState = {
-  user: userFromStorage ? JSON.parse(userFromStorage) : null,
-  token: tokenFromStorage || null,
+  user: null,
+  isAuthenticated: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials: (state, action: PayloadAction<{ user: IUserPublic; token: string }>) => {
-      const { user, token } = action.payload;
-      state.user = user;
-      state.token = token;
-
-      // Persist to localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
+    setCredentials: (state, action: PayloadAction<{ user: IUserPublic }>) => {
+      state.user = action.payload.user;
+      state.isAuthenticated = true;
     },
     logOut: (state) => {
       state.user = null;
-      state.token = null;
-
-      // Clear localStorage
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      state.isAuthenticated = false;
     },
   },
 });
@@ -45,4 +32,4 @@ export default authSlice.reducer;
 
 // Selectors
 export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
-export const selectCurrentToken = (state: { auth: AuthState }) => state.auth.token;
+export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;

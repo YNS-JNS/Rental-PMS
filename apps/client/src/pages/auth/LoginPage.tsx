@@ -45,17 +45,14 @@ export default function LoginPage() {
   // 2. Submission Handler
   async function onSubmit(values: LoginInput) {
     try {
-      // API Call (unwrap allows catching the error directly)
+      // API Call — cookies are set automatically by the server response
       const response = await login(values).unwrap();
       
-      // Update Redux State
-      dispatch(setCredentials({ 
-        user: response.data.user, 
-        token: response.data.token 
-      }));
+      // Update Redux State (user only, no token)
+      dispatch(setCredentials({ user: response.data.user }));
 
-      // Redirect to Dashboard
-      navigate('/dashboard');
+      // Redirect to Dashboard (replace prevents back-button to login)
+      navigate('/dashboard', { replace: true });
       
     } catch (err: any) {
       // Error Handling: Set root error to display at the bottom of the form

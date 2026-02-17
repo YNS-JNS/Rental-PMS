@@ -1,20 +1,45 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAppSelector } from '@/app/hooks';
-import { selectCurrentToken } from '@/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { selectIsAuthenticated, setCredentials } from '@/features/auth/authSlice';
+import { useGetMeQuery } from '@/features/auth/authApiSlice';
 import { Sidebar } from './Sidebar';
 import Header from './Header';
 import { Breadcrumbs } from '@/components/common/Breadcrumbs';
+import { useEffect } from 'react';
 
 export default function ProtectedLayout() {
-  const token = useAppSelector(selectCurrentToken);
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const location = useLocation();
 
-  // 1. Security Check
-  if (!token) {
+  // Rehydrate session from cookies on page refresh.
+  // If cookies are still valid but Redux state is lost (F5), this restores the session.
+  const { data: meData, isLoading: isMeLoading, isError: isMeError } = useGetMeQuery(undefined, {
+    skip: isAuthenticated, // Skip if already authenticated (no need to call /me)
+  });
+
+  // When /me succeeds, restore user in Redux
+  useEffect(() => {
+    if (meData?.data?.user) {
+      dispatch(setCredentials({ user: meData.data.user }));
+    }
+  }, [meData, dispatch]);
+
+  // Still loading session check — show spinner
+  if (!isAuthenticated && isMeLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Not authenticated and /me failed or hasn't been called
+  if (!isAuthenticated && (isMeError || !meData)) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 2. Layout Structure
+  // Authenticated — render layout
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       {/* Sidebar - Hidden on mobile, Visible on Desktop (md) */}

@@ -18,31 +18,27 @@ declare global {
 
 /**
  * AUTHENTICATION MIDDLEWARE
- * 1. Checks for Authorization header (Bearer <token>)
+ * 1. Reads the accessToken from HttpOnly cookies
  * 2. Verifies the token using the secret key
  * 3. Attaches the decoded user to the request object
  * 4. Passes control to the next handler
  */
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies?.accessToken;
 
-    // 1. Check if header exists and starts with "Bearer "
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return res.status(401).json({ message: 'Authentication required. No token provided.' });
     }
 
-    // 2. Extract token
-    const token = authHeader.split(' ')[1];
-
-    // 3. Verify token
+    // Verify token
     const decoded = jwt.verify(token, env.JWT_SECRET);
 
-    // 4. Attach user to request
+    // Attach user to request
     req.user = decoded;
 
     next();
   } catch (error) {
-    return res.status(403).json({ message: 'Invalid or expired token.' });
+    return res.status(401).json({ message: 'Invalid or expired token.' });
   }
 };

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
+import { authenticate } from '../../middleware/auth.middleware';
 
 const router = Router();
 
@@ -42,7 +43,7 @@ const router = Router();
  *                 example: "password123"
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User registered successfully. Tokens set via HttpOnly cookies.
  *       400:
  *         description: Validation error or Email already exists
  */
@@ -74,12 +75,56 @@ router.post('/register', AuthController.register);
  *                 example: "password123"
  *     responses:
  *       200:
- *         description: Login successful, returns JWT token
+ *         description: Login successful. Tokens set via HttpOnly cookies.
  *       401:
  *         description: Invalid credentials
  *       400:
  *         description: Validation error
  */
 router.post('/login', AuthController.login);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refresh access token using refresh token cookie
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Tokens refreshed successfully
+ *       401:
+ *         description: Invalid or expired refresh token
+ */
+router.post('/refresh', AuthController.refresh);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user (clears cookies and revokes refresh token)
+ *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ */
+router.post('/logout', authenticate, AuthController.logout);
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user data (session rehydration)
+ *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns current user data
+ *       401:
+ *         description: Not authenticated
+ */
+router.get('/me', authenticate, AuthController.me);
 
 export default router;

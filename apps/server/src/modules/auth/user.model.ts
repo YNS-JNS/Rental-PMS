@@ -9,6 +9,7 @@ export interface IUser extends Document {
   password: string;
   role: UserRole;
   isActive: boolean;
+  refreshToken?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -45,6 +46,10 @@ const UserSchema = new Schema<IUser>(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    refreshToken: {
+      type: String,
+      select: false, // Security: Never return refreshToken by default in queries
     },
   },
   {
