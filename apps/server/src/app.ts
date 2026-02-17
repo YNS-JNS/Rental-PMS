@@ -2,8 +2,10 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
+import { env } from './config/env';
 
 // Import Routes
 import authRoutes from './modules/auth/auth.routes';
@@ -21,8 +23,15 @@ const app: Application = express();
 app.use(helmet());
 
 // Cross-Origin Resource Sharing (CORS)
-// Allows the frontend to communicate with the backend
-app.use(cors());
+// Strict origin + credentials for HttpOnly cookie auth
+const corsOptions: cors.CorsOptions = {
+  origin: env.FRONTEND_URL,
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// Parse cookies (HttpOnly cookies for auth tokens)
+app.use(cookieParser());
 
 // Parse JSON request bodies
 app.use(express.json());

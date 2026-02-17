@@ -11,16 +11,26 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { logOut, selectCurrentUser } from '@/features/auth/authSlice';
+import { useLogoutMutation } from '@/features/auth/authApiSlice';
 import { useNavigate } from 'react-router-dom';
 
 export function UserNav() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
+  const [logout] = useLogoutMutation();
 
-  const handleLogout = () => {
-    dispatch(logOut());
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      // 1. Call server to clear refresh token from DB + clear cookies
+      await logout().unwrap();
+    } catch {
+      // Even if API call fails, still logout client-side
+    } finally {
+      // 2. Clear Redux state
+      dispatch(logOut());
+      navigate('/login', { replace: true });
+    }
   };
 
   // Generate initials for Avatar Fallback (e.g., "John Doe" -> "JD")

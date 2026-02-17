@@ -46,17 +46,14 @@ export default function RegisterPage() {
   // 2. Submission Handler
   async function onSubmit(values: RegisterInput) {
     try {
-      // API Call
+      // API Call — cookies are set automatically by the server response
       const response = await register(values).unwrap();
       
-      // Update Redux State (Auto-login after registration)
-      dispatch(setCredentials({ 
-        user: response.data.user, 
-        token: response.data.token 
-      }));
+      // Update Redux State (Auto-login after registration, user only)
+      dispatch(setCredentials({ user: response.data.user }));
 
-      // Redirect to Dashboard
-      navigate('/dashboard');
+      // Redirect to Dashboard (replace prevents back-button to register)
+      navigate('/dashboard', { replace: true });
       
     } catch (err: any) {
       // Error Handling
