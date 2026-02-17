@@ -14,6 +14,8 @@ import tenantRoutes from './modules/tenants/tenant.routes';
 import bookingRoutes from './modules/bookings/booking.routes';
 import paymentRoutes from './modules/finance/finance.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
+import settingsRoutes from './modules/settings/settings.routes';
+import userRoutes from './modules/auth/user.routes';
 
 const app: Application = express();
 
@@ -63,5 +65,7 @@ app.use('/api/tenants', tenantRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/users', userRoutes);
 
 export default app;

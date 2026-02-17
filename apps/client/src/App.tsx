@@ -17,6 +17,9 @@ import BookingsPage from '@/pages/bookings/BookingsPage';
 import NewBookingPage from '@/pages/bookings/NewBookingPage';
 import BookingDetailsPage from '@/pages/bookings/BookingDetailsPage';
 import EditBookingPage from '@/pages/bookings/EditBookingPage';
+import SettingsLayout from '@/pages/settings/SettingsLayout';
+import ProfileSettingsPage from '@/pages/settings/ProfileSettingsPage';
+import GeneralSettingsPage from '@/pages/settings/GeneralSettingsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 function App() {
@@ -47,6 +50,12 @@ function App() {
         <Route path="/bookings/new" element={<NewBookingPage />} />
         <Route path="/bookings/:id" element={<BookingDetailsPage />} />
         <Route path="/bookings/:id/edit" element={<EditBookingPage />} />
+        
+        {/* Settings Routes */}
+        <Route path="/settings" element={<SettingsLayout />}>
+          <Route path="profile" element={<ProfileSettingsPage />} />
+          <Route path="general" element={<GeneralSettingsPage />} />
+        </Route>
         
       </Route>
 
