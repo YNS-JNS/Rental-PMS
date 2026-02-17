@@ -51,7 +51,9 @@ export function Sidebar({ className }: SidebarProps) {
                 className={cn(
                   buttonVariants({ variant: 'ghost' }),
                   'w-full justify-start',
-                  location.pathname === item.href
+                  (item.href === '/settings'
+                    ? location.pathname.startsWith('/settings')
+                    : location.pathname === item.href)
                     ? 'bg-muted hover:bg-muted'
                     : 'hover:bg-transparent hover:underline',
                   'justify-start'
