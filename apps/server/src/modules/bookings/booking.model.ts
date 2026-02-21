@@ -66,6 +66,11 @@ const BookingSchema = new Schema(
       default: 0,
       min: 0,
     },
+    cleaningStatus: {
+      type: String,
+      enum: ['PENDING', 'CLEAN'],
+      default: 'PENDING',
+    },
   },
   {
     timestamps: true,

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { TenantController } from './tenant.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, authorizeRoles } from '../../middleware/auth.middleware';
+import { UserRole } from '@rental/shared';
 
 const router = Router();
 
@@ -67,7 +68,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', authenticate, TenantController.findAll);
+router.get('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), TenantController.findAll);
 
 /**
  * @swagger
@@ -96,7 +97,7 @@ router.get('/', authenticate, TenantController.findAll);
  *       401:
  *         description: Unauthorized
  */
-router.get('/:id', authenticate, TenantController.findOne);
+router.get('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), TenantController.findOne);
 
 /**
  * @swagger
@@ -122,7 +123,7 @@ router.get('/:id', authenticate, TenantController.findOne);
  *       401:
  *         description: Unauthorized
  */
-router.post('/', authenticate, TenantController.create);
+router.post('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), TenantController.create);
 
 /**
  * @swagger
@@ -157,7 +158,7 @@ router.post('/', authenticate, TenantController.create);
  *       401:
  *         description: Unauthorized
  */
-router.put('/:id', authenticate, TenantController.update);
+router.put('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), TenantController.update);
 
 /**
  * @swagger
@@ -182,6 +183,6 @@ router.put('/:id', authenticate, TenantController.update);
  *       401:
  *         description: Unauthorized
  */
-router.delete('/:id', authenticate, TenantController.delete);
+router.delete('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), TenantController.delete);
 
 export default router;

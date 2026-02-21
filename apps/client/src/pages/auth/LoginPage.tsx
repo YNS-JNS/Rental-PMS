@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { LoginInput, LoginSchema } from '@rental/shared';
+import { LoginInput, LoginSchema, UserRole } from '@rental/shared';
 import { useLoginMutation } from '@/features/auth/authApiSlice';
 import { useAppDispatch } from '@/app/hooks';
 import { setCredentials } from '@/features/auth/authSlice';
@@ -51,8 +51,13 @@ export default function LoginPage() {
       // Update Redux State (user only, no token)
       dispatch(setCredentials({ user: response.data.user }));
 
-      // Redirect to Dashboard (replace prevents back-button to login)
-      navigate('/dashboard', { replace: true });
+      // Role-based redirect
+      const userRole = response.data.user.role;
+      if (userRole === UserRole.CLEANER) {
+        navigate('/cleaning-tasks', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
       
     } catch (err: any) {
       // Error Handling: Set root error to display at the bottom of the form

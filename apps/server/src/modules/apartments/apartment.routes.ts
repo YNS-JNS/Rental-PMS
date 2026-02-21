@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ApartmentController } from './apartment.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, authorizeRoles } from '../../middleware/auth.middleware';
+import { UserRole } from '@rental/shared';
 
 const router = Router();
 
@@ -66,7 +67,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.get('/', ApartmentController.findAll);
+router.get('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), ApartmentController.findAll);
 
 /**
  * @swagger
@@ -91,7 +92,7 @@ router.get('/', ApartmentController.findAll);
  *       404:
  *         description: Apartment not found
  */
-router.get('/:id', ApartmentController.findOne);
+router.get('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), ApartmentController.findOne);
 
 /**
  * @swagger
@@ -115,7 +116,7 @@ router.get('/:id', ApartmentController.findOne);
  *       500:
  *         description: Server error
  */
-router.post('/', authenticate, ApartmentController.create);
+router.post('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), ApartmentController.create);
 
 /**
  * @swagger
@@ -146,7 +147,7 @@ router.post('/', authenticate, ApartmentController.create);
  *       404:
  *         description: Apartment not found
  */
-router.put('/:id', authenticate, ApartmentController.update);
+router.put('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), ApartmentController.update);
 
 /**
  * @swagger
@@ -171,6 +172,6 @@ router.put('/:id', authenticate, ApartmentController.update);
  *       404:
  *         description: Apartment not found
  */
-router.delete('/:id', authenticate, ApartmentController.delete);
+router.delete('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), ApartmentController.delete);
 
 export default router;

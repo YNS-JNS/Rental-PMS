@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { BookingController } from './booking.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, authorizeRoles } from '../../middleware/auth.middleware';
+import { UserRole } from '@rental/shared';
 
 const router = Router();
 
@@ -106,7 +107,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/availability', authenticate, BookingController.checkAvailability);
+router.get('/availability', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), BookingController.checkAvailability);
 
 /**
  * @swagger
@@ -145,7 +146,7 @@ router.get('/availability', authenticate, BookingController.checkAvailability);
  *       401:
  *         description: Unauthorized
  */
-router.get('/', authenticate, BookingController.findAll);
+router.get('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), BookingController.findAll);
 
 /**
  * @swagger
@@ -174,7 +175,7 @@ router.get('/', authenticate, BookingController.findAll);
  *       401:
  *         description: Unauthorized
  */
-router.get('/:id', authenticate, BookingController.findOne);
+router.get('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), BookingController.findOne);
 
 /**
  * @swagger
@@ -202,7 +203,7 @@ router.get('/:id', authenticate, BookingController.findOne);
  *       401:
  *         description: Unauthorized
  */
-router.post('/', authenticate, BookingController.create);
+router.post('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), BookingController.create);
 
 /**
  * @swagger
@@ -237,7 +238,7 @@ router.post('/', authenticate, BookingController.create);
  *       401:
  *         description: Unauthorized
  */
-router.put('/:id', authenticate, BookingController.update);
+router.put('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), BookingController.update);
 
 /**
  * @swagger
@@ -262,6 +263,6 @@ router.put('/:id', authenticate, BookingController.update);
  *       401:
  *         description: Unauthorized
  */
-router.delete('/:id', authenticate, BookingController.delete);
+router.delete('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), BookingController.delete);
 
 export default router;

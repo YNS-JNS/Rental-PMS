@@ -1,23 +1,40 @@
 import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { User, Building2 } from 'lucide-react';
+import { User, Building2, Users } from 'lucide-react';
 import { PageTitle } from '@/components/common/PageTitle';
+import { useAppSelector } from '@/app/hooks';
+import { selectCurrentUser } from '@/features/auth/authSlice';
+import { UserRole } from '@rental/shared';
 
-const settingsNav = [
+const allSettingsNav = [
   {
     title: 'Profile & Security',
     href: '/settings/profile',
     icon: User,
+    roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
   },
   {
     title: 'General Configuration',
     href: '/settings/general',
     icon: Building2,
+    roles: [UserRole.SUPER_ADMIN],
+  },
+  {
+    title: 'Staff Management',
+    href: '/settings/staff',
+    icon: Users,
+    roles: [UserRole.SUPER_ADMIN],
   },
 ];
 
 export default function SettingsLayout() {
   const location = useLocation();
+  const user = useAppSelector(selectCurrentUser);
+
+  // Filter tabs based on user role
+  const settingsNav = allSettingsNav.filter(
+    (item) => user && item.roles.includes(user.role)
+  );
 
   // Redirect /settings to /settings/profile
   if (location.pathname === '/settings') {

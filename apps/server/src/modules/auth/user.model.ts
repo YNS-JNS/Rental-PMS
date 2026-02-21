@@ -41,7 +41,7 @@ const UserSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: Object.values(UserRole),
-      default: UserRole.STAFF,
+      default: UserRole.ADMIN,
     },
     isActive: {
       type: Boolean,

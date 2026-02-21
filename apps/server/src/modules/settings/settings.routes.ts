@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { SettingsController } from './settings.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, authorizeRoles } from '../../middleware/auth.middleware';
+import { UserRole } from '@rental/shared';
 
 const router = Router();
 
@@ -23,7 +24,7 @@ const router = Router();
  *       200:
  *         description: Returns agency settings
  */
-router.get('/', authenticate, SettingsController.getSettings);
+router.get('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN), SettingsController.getSettings);
 
 /**
  * @swagger
@@ -39,6 +40,6 @@ router.get('/', authenticate, SettingsController.getSettings);
  *       400:
  *         description: Validation error
  */
-router.put('/', authenticate, SettingsController.updateSettings);
+router.put('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN), SettingsController.updateSettings);
 
 export default router;
