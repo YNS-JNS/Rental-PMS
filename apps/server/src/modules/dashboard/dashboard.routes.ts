@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { DashboardController } from './dashboard.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, authorizeRoles } from '../../middleware/auth.middleware';
+import { UserRole } from '@rental/shared';
 
 const router = Router();
 
@@ -63,6 +64,6 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', authenticate, DashboardController.getStats);
+router.get('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), DashboardController.getStats);
 
 export default router;

@@ -19,6 +19,10 @@ import { StatCard } from '@/features/dashboard/components/StatCard';
 import { RevenueChart } from '@/features/dashboard/components/RevenueChart';
 import { ActionList, PendingPaymentsList } from '@/features/dashboard/components/ActionList';
 
+// RBAC
+import { RoleGuard } from '@/components/common/RoleGuard';
+import { UserRole } from '@rental/shared';
+
 export default function DashboardPage() {
   const { data: stats, isLoading, isError } = useGetDashboardStatsQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -103,23 +107,30 @@ export default function DashboardPage() {
       </div>
 
       {/* =============================== */}
-      {/* KPI Cards (5 columns)           */}
+      {/* KPI Cards                        */}
       {/* =============================== */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <StatCard
-          title="Total Revenue"
-          value={formatCurrency(kpis.totalRevenue)}
-          subtitle="All-time earnings"
-          icon={CreditCard}
-          iconColor="text-green-500"
-        />
-        <StatCard
-          title="Monthly Revenue"
-          value={formatCurrency(kpis.monthlyRevenue)}
-          subtitle="This month"
-          icon={TrendingUp}
-          iconColor="text-blue-500"
-        />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {/* Financial KPIs — SUPER_ADMIN only */}
+        <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+          <StatCard
+            title="Total Revenue"
+            value={formatCurrency(kpis.totalRevenue)}
+            subtitle="All-time earnings"
+            icon={CreditCard}
+            iconColor="text-green-500"
+          />
+        </RoleGuard>
+        <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+          <StatCard
+            title="Monthly Revenue"
+            value={formatCurrency(kpis.monthlyRevenue)}
+            subtitle="This month"
+            icon={TrendingUp}
+            iconColor="text-blue-500"
+          />
+        </RoleGuard>
+
+        {/* Operational KPIs — All admins */}
         <StatCard
           title="Occupancy Rate"
           value={`${kpis.occupancyRate}%`}
@@ -144,15 +155,17 @@ export default function DashboardPage() {
       </div>
 
       {/* =============================== */}
-      {/* Chart (2/3) + Actions (1/3)     */}
+      {/* Chart + Actions                  */}
       {/* =============================== */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Revenue Chart — spans 4 of 7 */}
-        <div className="lg:col-span-4">
-          <RevenueChart data={revenueChart} />
-        </div>
+        {/* Revenue Chart — SUPER_ADMIN only */}
+        <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+          <div className="lg:col-span-4">
+            <RevenueChart data={revenueChart} />
+          </div>
+        </RoleGuard>
 
-        {/* Today's Actions — spans 3 of 7 */}
+        {/* Today's Actions — All admins */}
         <div className="lg:col-span-3 space-y-4">
           <ActionList
             title="🔑 Check-ins Today"
@@ -168,9 +181,11 @@ export default function DashboardPage() {
       </div>
 
       {/* =============================== */}
-      {/* Pending Payments (Full Width)   */}
+      {/* Pending Payments — SUPER_ADMIN   */}
       {/* =============================== */}
-      <PendingPaymentsList items={actions.pendingPayments} />
+      <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+        <PendingPaymentsList items={actions.pendingPayments} />
+      </RoleGuard>
     </div>
   );
 }

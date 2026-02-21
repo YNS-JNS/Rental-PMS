@@ -16,6 +16,8 @@ import paymentRoutes from './modules/finance/finance.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import settingsRoutes from './modules/settings/settings.routes';
 import userRoutes from './modules/auth/user.routes';
+import staffRoutes from './modules/staff/staff.routes';
+import cleaningRoutes from './modules/cleaning/cleaning.routes';
 
 const app: Application = express();
 
@@ -67,5 +69,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/tasks', cleaningRoutes);
 
 export default app;

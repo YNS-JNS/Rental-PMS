@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts & Pages
 import ProtectedLayout from '@/components/layout/ProtectedLayout';
+import CleanerLayout from '@/components/layout/CleanerLayout';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
@@ -20,6 +21,8 @@ import EditBookingPage from '@/pages/bookings/EditBookingPage';
 import SettingsLayout from '@/pages/settings/SettingsLayout';
 import ProfileSettingsPage from '@/pages/settings/ProfileSettingsPage';
 import GeneralSettingsPage from '@/pages/settings/GeneralSettingsPage';
+import StaffSettingsPage from '@/pages/settings/StaffSettingsPage';
+import CleaningTasksPage from '@/pages/cleaning/CleaningTasksPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 function App() {
@@ -29,7 +32,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Protected Routes Wrapper */}
+      {/* Protected Routes — SUPER_ADMIN & ADMIN (full sidebar) */}
       <Route element={<ProtectedLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         
@@ -51,12 +54,18 @@ function App() {
         <Route path="/bookings/:id" element={<BookingDetailsPage />} />
         <Route path="/bookings/:id/edit" element={<EditBookingPage />} />
         
-        {/* Settings Routes */}
+        {/* Settings Routes (SUPER_ADMIN only — enforced by backend + sidebar) */}
         <Route path="/settings" element={<SettingsLayout />}>
           <Route path="profile" element={<ProfileSettingsPage />} />
           <Route path="general" element={<GeneralSettingsPage />} />
+          <Route path="staff" element={<StaffSettingsPage />} />
         </Route>
         
+      </Route>
+
+      {/* Cleaner Layout — Minimal mobile-first UI */}
+      <Route element={<CleanerLayout />}>
+        <Route path="/cleaning-tasks" element={<CleaningTasksPage />} />
       </Route>
 
       {/* Default Redirect */}

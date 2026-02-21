@@ -13,6 +13,8 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { logOut, selectCurrentUser } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApiSlice';
 import { useNavigate } from 'react-router-dom';
+import { RoleGuard } from '@/components/common/RoleGuard';
+import { UserRole } from '@rental/shared';
 
 export function UserNav() {
   const dispatch = useAppDispatch();
@@ -65,7 +67,9 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate('/settings/profile')}>Profile</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/settings/general')}>Settings</DropdownMenuItem>
+          <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+            <DropdownMenuItem onClick={() => navigate('/settings/general')}>Settings</DropdownMenuItem>
+          </RoleGuard>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">

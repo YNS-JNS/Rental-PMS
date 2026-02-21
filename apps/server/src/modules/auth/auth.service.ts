@@ -1,5 +1,5 @@
 import { User, IUser } from './user.model';
-import { RegisterInput, LoginInput } from '@rental/shared';
+import { RegisterInput, LoginInput, UserRole } from '@rental/shared';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -16,7 +16,7 @@ export const AuthService = {
   /**
    * Register a new user
    * 1. Check if email exists
-   * 2. Create user
+   * 2. Create user (first user becomes SUPER_ADMIN)
    * 3. Generate dual tokens (access + refresh)
    * 4. Store hashed refresh token in DB
    */
@@ -29,8 +29,12 @@ export const AuthService = {
       throw new Error('Email is already registered');
     }
 
+    // First user in the system becomes SUPER_ADMIN
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? UserRole.SUPER_ADMIN : UserRole.ADMIN;
+
     // Create User (Password hashing is handled by Mongoose pre-save hook)
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role });
 
     // Generate tokens
     const accessToken = generateAccessToken(user._id.toString(), user.role);
@@ -47,8 +51,9 @@ export const AuthService = {
    * Login a user
    * 1. Find user by email
    * 2. Verify password
-   * 3. Generate dual tokens
-   * 4. Store hashed refresh token in DB
+   * 3. Migrate legacy roles if needed
+   * 4. Generate dual tokens
+   * 5. Store hashed refresh token in DB
    */
   login: async (data: LoginInput) => {
     const { email, password } = data;
@@ -64,6 +69,19 @@ export const AuthService = {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       throw new Error('Invalid credentials');
+    }
+
+    // --- Legacy role migration ---
+    // If no SUPER_ADMIN exists in the entire system, promote this user
+    const superAdminExists = await User.exists({ role: UserRole.SUPER_ADMIN });
+    if (!superAdminExists) {
+      user.role = UserRole.SUPER_ADMIN;
+      await User.findByIdAndUpdate(user._id, { role: UserRole.SUPER_ADMIN });
+    }
+    // Migrate old 'STAFF' role (renamed to CLEANER)
+    else if (user.role === ('STAFF' as any)) {
+      user.role = UserRole.CLEANER;
+      await User.findByIdAndUpdate(user._id, { role: UserRole.CLEANER });
     }
 
     // Generate tokens

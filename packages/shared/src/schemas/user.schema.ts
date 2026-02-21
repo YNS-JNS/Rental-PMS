@@ -12,7 +12,7 @@ import { z } from 'zod';
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
-  STAFF = 'STAFF',
+  CLEANER = 'CLEANER',
 }
 
 /**

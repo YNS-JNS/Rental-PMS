@@ -1,44 +1,49 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
+import { UserRole } from '@rental/shared';
 
 /**
- * TYPE DECLARATION MERGING
- * We extend the standard Express Request interface globally
- * to include the 'user' property. This prevents TypeScript errors
- * when accessing req.user in controllers.
+ * Authenticate Middleware
+ * Reads the accessToken from HttpOnly cookies and verifies it.
+ * On success, attaches decoded payload to req.user.
  */
-declare global {
-  namespace Express {
-    interface Request {
-      user?: string | jwt.JwtPayload;
-    }
-  }
-}
-
-/**
- * AUTHENTICATION MIDDLEWARE
- * 1. Reads the accessToken from HttpOnly cookies
- * 2. Verifies the token using the secret key
- * 3. Attaches the decoded user to the request object
- * 4. Passes control to the next handler
- */
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const token = req.cookies?.accessToken;
 
     if (!token) {
-      return res.status(401).json({ message: 'Authentication required. No token provided.' });
+      res.status(401).json({ success: false, message: 'Authentication required. No token provided.' });
+      return;
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, env.JWT_SECRET);
-
-    // Attach user to request
+    const decoded = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload;
     req.user = decoded;
-
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token.' });
+    res.status(401).json({ success: false, message: 'Invalid or expired token.' });
   }
+};
+
+/**
+ * Authorize Roles Middleware (RBAC)
+ * Checks if the authenticated user's role is in the allowed list.
+ * Must be used AFTER authenticate middleware.
+ *
+ * Usage: authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+ */
+export const authorizeRoles = (...allowedRoles: UserRole[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const userRole = (req.user as jwt.JwtPayload)?.role;
+
+    if (!userRole || !allowedRoles.includes(userRole as UserRole)) {
+      res.status(403).json({
+        success: false,
+        message: 'Forbidden. You do not have permission to access this resource.',
+      });
+      return;
+    }
+
+    next();
+  };
 };

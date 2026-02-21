@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { FinanceController } from './finance.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, authorizeRoles } from '../../middleware/auth.middleware';
+import { UserRole } from '@rental/shared';
 
 const router = Router();
 
@@ -68,7 +69,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.post('/', authenticate, FinanceController.create);
+router.post('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN), FinanceController.create);
 
 /**
  * @swagger
@@ -91,7 +92,7 @@ router.post('/', authenticate, FinanceController.create);
  *       401:
  *         description: Unauthorized
  */
-router.get('/booking/:bookingId', authenticate, FinanceController.findByBooking);
+router.get('/booking/:bookingId', authenticate, authorizeRoles(UserRole.SUPER_ADMIN), FinanceController.findByBooking);
 
 /**
  * @swagger
@@ -116,7 +117,7 @@ router.get('/booking/:bookingId', authenticate, FinanceController.findByBooking)
  *       401:
  *         description: Unauthorized
  */
-router.get('/:id', authenticate, FinanceController.findOne);
+router.get('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN), FinanceController.findOne);
 
 /**
  * @swagger
@@ -141,6 +142,6 @@ router.get('/:id', authenticate, FinanceController.findOne);
  *       401:
  *         description: Unauthorized
  */
-router.delete('/:id', authenticate, FinanceController.delete);
+router.delete('/:id', authenticate, authorizeRoles(UserRole.SUPER_ADMIN), FinanceController.delete);
 
 export default router;

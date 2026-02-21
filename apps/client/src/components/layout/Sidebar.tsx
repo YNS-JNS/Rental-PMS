@@ -1,7 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { LayoutDashboard, Building2, CalendarDays, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Building2, CalendarDays, Users, Settings, DollarSign, UserCog } from 'lucide-react';
+import { RoleGuard } from '@/components/common/RoleGuard';
+import { UserRole } from '@rental/shared';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -13,26 +15,44 @@ export function Sidebar({ className }: SidebarProps) {
       title: 'Dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
+      roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
     },
     {
       title: 'Properties',
-      href: '/apartments', // Future route
+      href: '/apartments',
       icon: Building2,
+      roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
     },
     {
       title: 'Bookings',
-      href: '/bookings', // Future route
+      href: '/bookings',
       icon: CalendarDays,
+      roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
     },
     {
       title: 'Tenants',
-      href: '/tenants', // Future route
+      href: '/tenants',
       icon: Users,
+      roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+    },
+    {
+      title: 'Finance',
+      href: '/finance',
+      icon: DollarSign,
+      roles: [UserRole.SUPER_ADMIN],
     },
     {
       title: 'Settings',
-      href: '/settings', // Future route
+      href: '/settings',
       icon: Settings,
+      roles: [UserRole.SUPER_ADMIN],
+    },
+    {
+      // Profile link — visible to ADMIN (who can't see full Settings)
+      title: 'My Profile',
+      href: '/settings/profile',
+      icon: UserCog,
+      roles: [UserRole.ADMIN],
     },
   ];
 
@@ -45,23 +65,24 @@ export function Sidebar({ className }: SidebarProps) {
           </h2>
           <div className="space-y-1">
             {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  buttonVariants({ variant: 'ghost' }),
-                  'w-full justify-start',
-                  (item.href === '/settings'
-                    ? location.pathname.startsWith('/settings')
-                    : location.pathname === item.href)
-                    ? 'bg-muted hover:bg-muted'
-                    : 'hover:bg-transparent hover:underline',
-                  'justify-start'
-                )}
-              >
-                <item.icon className="mr-2 h-4 w-4" />
-                {item.title}
-              </Link>
+              <RoleGuard key={item.href} allowedRoles={item.roles}>
+                <Link
+                  to={item.href}
+                  className={cn(
+                    buttonVariants({ variant: 'ghost' }),
+                    'w-full justify-start',
+                    (item.href === '/settings' || item.href === '/finance'
+                      ? location.pathname.startsWith(item.href)
+                      : location.pathname === item.href)
+                      ? 'bg-muted hover:bg-muted'
+                      : 'hover:bg-transparent hover:underline',
+                    'justify-start'
+                  )}
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.title}
+                </Link>
+              </RoleGuard>
             ))}
           </div>
         </div>
