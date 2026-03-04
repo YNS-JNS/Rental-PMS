@@ -124,6 +124,7 @@ export default function GeneralSettingsPage() {
               )}
             />
 
+            {/* Currency selector hidden — defaultCurrency is managed via useCurrency() hook
             <FormField
               control={form.control}
               name="defaultCurrency"
@@ -153,6 +154,7 @@ export default function GeneralSettingsPage() {
                 </FormItem>
               )}
             />
+            */}
 
             <FormField
               control={form.control}

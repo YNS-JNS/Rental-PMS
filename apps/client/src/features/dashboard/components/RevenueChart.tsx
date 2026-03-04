@@ -8,7 +8,8 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { formatCurrency } from '@/lib/format';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface RevenueChartEntry {
   month: string;
@@ -20,6 +21,8 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
+  const { currency, locale } = useCurrency();
+
   return (
     <Card className="col-span-4">
       <CardHeader>
@@ -42,7 +45,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
               }
             />
             <Tooltip
-              formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'Revenue']}
+              formatter={(value: number | undefined) => [formatCurrency(value ?? 0, currency, locale), 'Revenue']}
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',

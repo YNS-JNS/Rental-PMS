@@ -12,12 +12,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 // Utils
-import { formatCurrency } from '@/lib/formatCurrency';
 
 // Custom Components
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { NewPaymentModal } from '@/features/finance/components/NewPaymentModal';
 import { PageTitle } from '@/components/common/PageTitle';
+import { CurrencyText } from '@/components/common/CurrencyText';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -189,7 +189,7 @@ export default function BookingDetailsPage() {
                       {config.label}
                     </Badge>
                     <div className="text-2xl font-bold text-primary">
-                      {formatCurrency(booking.totalPrice)}
+                      <CurrencyText amount={booking.totalPrice} className="text-2xl font-bold text-primary" />
                     </div>
                   </div>
                 </CardContent>
@@ -251,7 +251,7 @@ export default function BookingDetailsPage() {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Total Price</p>
-                      <p className="font-medium">{formatCurrency(booking.totalPrice)}</p>
+                      <p className="font-medium"><CurrencyText amount={booking.totalPrice} /></p>
                     </div>
                   </div>
 
@@ -312,7 +312,7 @@ export default function BookingDetailsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Total Booking</p>
-                        <p className="text-2xl font-bold">{formatCurrency(booking.totalPrice)}</p>
+                        <p className="text-2xl font-bold"><CurrencyText amount={booking.totalPrice} className="text-2xl font-bold" /></p>
                       </div>
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                         <DollarSign className="h-6 w-6 text-primary" />
@@ -328,7 +328,7 @@ export default function BookingDetailsPage() {
                       <div>
                         <p className="text-sm text-muted-foreground">Total Paid</p>
                         <p className={`text-2xl font-bold ${totalPaid >= booking.totalPrice ? 'text-green-600' : totalPaid > 0 ? 'text-orange-500' : ''}`}>
-                          {formatCurrency(totalPaid)}
+                          <CurrencyText amount={totalPaid} className={`text-2xl font-bold ${totalPaid >= booking.totalPrice ? 'text-green-600' : totalPaid > 0 ? 'text-orange-500' : ''}`} />
                         </p>
                       </div>
                       <Badge className={paymentConfig.className}>
@@ -345,7 +345,7 @@ export default function BookingDetailsPage() {
                       <div>
                         <p className="text-sm text-muted-foreground">Balance Due</p>
                         <p className={`text-2xl font-bold ${balanceDue > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                          {formatCurrency(balanceDue)}
+                          <CurrencyText amount={balanceDue} className={`text-2xl font-bold ${balanceDue > 0 ? 'text-red-500' : 'text-green-600'}`} />
                         </p>
                       </div>
                       <div className={`flex h-12 w-12 items-center justify-center rounded-full ${balanceDue > 0 ? 'bg-red-100 dark:bg-red-900' : 'bg-green-100 dark:bg-green-900'}`}>
@@ -400,7 +400,7 @@ export default function BookingDetailsPage() {
                                 {payment.reference || '—'}
                               </TableCell>
                               <TableCell className="text-right font-medium">
-                                {formatCurrency(payment.amount)}
+                                <CurrencyText amount={payment.amount} />
                               </TableCell>
                               <TableCell>
                                 <Button

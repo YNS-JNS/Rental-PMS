@@ -8,7 +8,8 @@ import { z } from 'zod';
 import { useGetBookingQuery, useUpdateBookingMutation } from '@/features/bookings/bookingsApiSlice';
 import { useGetApartmentsQuery } from '@/features/apartments/apartmentsApiSlice';
 import { useGetTenantsQuery } from '@/features/tenants/tenantsApiSlice';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { formatCurrency } from '@/lib/format';
+import { useCurrency } from '@/hooks/useCurrency';
 
 // Hooks
 import { useToast } from '@/hooks/use-toast';
@@ -64,6 +65,7 @@ export default function EditBookingPage() {
   const [updateBooking, { isLoading: isUpdating }] = useUpdateBookingMutation();
   const { data: apartments } = useGetApartmentsQuery();
   const { data: tenants } = useGetTenantsQuery();
+  const { currency, locale } = useCurrency();
 
   // Combobox options
   const apartmentOptions = useMemo(() =>
@@ -289,8 +291,8 @@ export default function EditBookingPage() {
                   <Info className="h-4 w-4" />
                   <AlertDescription>
                     <strong>{priceEstimate.apartmentName}</strong>: {priceEstimate.nights} night{priceEstimate.nights > 1 ? 's' : ''} ×{' '}
-                    {formatCurrency(priceEstimate.pricePerNight)} ={' '}
-                    <strong>{formatCurrency(priceEstimate.total)}</strong>
+                    {formatCurrency(priceEstimate.pricePerNight, currency, locale)} ={' '}
+                    <strong>{formatCurrency(priceEstimate.total, currency, locale)}</strong>
                   </AlertDescription>
                 </Alert>
               )}
