@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+/* Currency selector hidden — re-enable these imports if re-activating the field
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+*/
 import {
   Form,
   FormControl,
@@ -27,12 +29,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+/* Currency selector hidden — re-enable if re-activating the field
 const CURRENCIES = [
   { value: 'MAD', label: 'MAD — Moroccan Dirham' },
   { value: 'USD', label: 'USD — US Dollar' },
   { value: 'EUR', label: 'EUR — Euro' },
   { value: 'GBP', label: 'GBP — British Pound' },
 ];
+*/
 
 export default function GeneralSettingsPage() {
   const { toast } = useToast();
