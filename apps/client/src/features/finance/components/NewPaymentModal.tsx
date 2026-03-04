@@ -6,7 +6,8 @@ import { CalendarIcon } from 'lucide-react';
 
 import { useCreatePaymentMutation } from '@/features/finance/financeApiSlice';
 import { useToast } from '@/hooks/use-toast';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { formatCurrency } from '@/lib/format';
+import { useCurrency } from '@/hooks/useCurrency';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -81,6 +82,7 @@ interface NewPaymentModalProps {
 export function NewPaymentModal({ isOpen, onClose, bookingId, balanceDue }: NewPaymentModalProps) {
   const { toast } = useToast();
   const [createPayment, { isLoading }] = useCreatePaymentMutation();
+  const { currency, locale } = useCurrency();
 
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(PaymentFormSchema),
@@ -113,7 +115,7 @@ export function NewPaymentModal({ isOpen, onClose, bookingId, balanceDue }: NewP
 
       toast({
         title: 'Payment Recorded',
-        description: `${formatCurrency(values.amount)} payment has been recorded.`,
+        description: `${formatCurrency(values.amount, currency, locale)} payment has been recorded.`,
       });
 
       form.reset();
@@ -133,7 +135,7 @@ export function NewPaymentModal({ isOpen, onClose, bookingId, balanceDue }: NewP
         <DialogHeader>
           <DialogTitle>Record Payment</DialogTitle>
           <DialogDescription>
-            Balance due: <span className="font-semibold text-foreground">{formatCurrency(balanceDue)}</span>
+            Balance due: <span className="font-semibold text-foreground">{formatCurrency(balanceDue, currency, locale)}</span>
           </DialogDescription>
         </DialogHeader>
 

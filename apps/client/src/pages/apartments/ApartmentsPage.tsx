@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Building2 } from 'lucide-react';
 import { useGetApartmentsQuery, useDeleteApartmentMutation } from '@/features/apartments/apartmentsApiSlice';
-import { formatCurrency } from '@/lib/formatCurrency';
 import { IApartment } from '@rental/shared';
 
 // Hooks
@@ -12,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { PageTitle } from '@/components/common/PageTitle';
 import { EmptyState } from '@/components/common/EmptyState';
+import { CurrencyText } from '@/components/common/CurrencyText';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // UI Components
@@ -90,9 +90,6 @@ export default function ApartmentsPage() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return formatCurrency(price);
-  };
 
   if (isLoading) {
     return (
@@ -189,7 +186,7 @@ export default function ApartmentsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatPrice(apartment.price)}
+                      <CurrencyText amount={apartment.price} />
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

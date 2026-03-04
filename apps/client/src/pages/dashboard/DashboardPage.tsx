@@ -1,5 +1,6 @@
 import { useGetDashboardStatsQuery } from '@/features/dashboard/dashboardApiSlice';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { formatDisplayValue } from '@/lib/format';
+import { useCurrency } from '@/hooks/useCurrency';
 import {
   Building2,
   CalendarCheck,
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   const { data: stats, isLoading, isError } = useGetDashboardStatsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+  const { currency } = useCurrency();
 
   // ============================
   // Error State
@@ -114,7 +116,9 @@ export default function DashboardPage() {
         <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
           <StatCard
             title="Total Revenue"
-            value={formatCurrency(kpis.totalRevenue)}
+            value={formatDisplayValue(kpis.totalRevenue, { suffix: currency }).value}
+            suffix={formatDisplayValue(kpis.totalRevenue, { suffix: currency }).suffix}
+            tooltipValue={`${kpis.totalRevenue} ${currency}`}
             subtitle="All-time earnings"
             icon={CreditCard}
             iconColor="text-green-500"
@@ -123,7 +127,9 @@ export default function DashboardPage() {
         <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
           <StatCard
             title="Monthly Revenue"
-            value={formatCurrency(kpis.monthlyRevenue)}
+            value={formatDisplayValue(kpis.monthlyRevenue, { suffix: currency }).value}
+            suffix={formatDisplayValue(kpis.monthlyRevenue, { suffix: currency }).suffix}
+            tooltipValue={`${kpis.monthlyRevenue} ${currency}`}
             subtitle="This month"
             icon={TrendingUp}
             iconColor="text-blue-500"
@@ -133,21 +139,22 @@ export default function DashboardPage() {
         {/* Operational KPIs — All admins */}
         <StatCard
           title="Occupancy Rate"
-          value={`${kpis.occupancyRate}%`}
+          value={formatDisplayValue(kpis.occupancyRate).value}
+          suffix="%"
           subtitle="This month"
           icon={Percent}
           iconColor="text-orange-500"
         />
         <StatCard
           title="Active Bookings"
-          value={kpis.activeBookings}
+          value={formatDisplayValue(kpis.activeBookings).value}
           subtitle="Currently active"
           icon={CalendarCheck}
           iconColor="text-indigo-500"
         />
         <StatCard
           title="Properties"
-          value={kpis.totalApartments}
+          value={formatDisplayValue(kpis.totalApartments).value}
           subtitle={`${kpis.availableApartments} available today`}
           icon={Building2}
           iconColor="text-violet-500"

@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Calendar as CalendarIcon, List } from 'lucide-react';
 import { useGetBookingsQuery, useDeleteBookingMutation } from '@/features/bookings/bookingsApiSlice';
 import type { IBooking } from '@rental/shared';
-import { formatCurrency } from '@/lib/formatCurrency';
 
 // Hooks
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +13,7 @@ import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { BookingsCalendar } from '@/features/bookings/components/BookingsCalendar';
 import { PageTitle } from '@/components/common/PageTitle';
 import { EmptyState } from '@/components/common/EmptyState';
+import { CurrencyText } from '@/components/common/CurrencyText';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // UI Components
@@ -251,7 +251,7 @@ export default function BookingsPage() {
                           })()}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell text-right font-medium">
-                          {formatCurrency(booking.totalPrice)}
+                          <CurrencyText amount={booking.totalPrice} />
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>

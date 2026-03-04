@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { CurrencyText } from '@/components/common/CurrencyText';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 // ============================================
@@ -106,7 +106,7 @@ export function PendingPaymentsList({ items }: PendingPaymentsListProps) {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-semibold text-red-500">
-                      {formatCurrency(item.balanceDue)}
+                      <CurrencyText amount={item.balanceDue} className="text-sm font-semibold text-red-500" />
                     </span>
                     <Badge className={statusConfig.className}>
                       {statusConfig.label}
