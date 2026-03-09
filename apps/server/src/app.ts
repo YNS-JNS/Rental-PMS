@@ -18,6 +18,7 @@ import settingsRoutes from './modules/settings/settings.routes';
 import userRoutes from './modules/auth/user.routes';
 import staffRoutes from './modules/staff/staff.routes';
 import cleaningRoutes from './modules/cleaning/cleaning.routes';
+import cleaningTaskRoutes from './modules/cleaning/cleaningTask.routes';
 
 const app: Application = express();
 
@@ -71,5 +72,6 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/tasks', cleaningRoutes);
+app.use('/api/cleaning-tasks', cleaningTaskRoutes);
 
 export default app;
