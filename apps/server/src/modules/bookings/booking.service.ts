@@ -2,6 +2,7 @@ import { Booking, IBookingDocument } from './booking.model';
 import { Apartment } from '../apartments/apartment.model';
 import { Tenant } from '../tenants/tenant.model';
 import { BookingInput, BookingStatusType } from '@rental/shared';
+import { CleaningTaskService } from '../cleaning/cleaningTask.service';
 
 /**
  * Custom error for booking conflicts
@@ -99,7 +100,7 @@ export class BookingService {
     }
 
     // Create booking with mapped field names
-    return Booking.create({
+    const newBooking = await Booking.create({
       apartment: data.apartmentId,
       tenant: data.tenantId,
       startDate: data.startDate,
@@ -109,6 +110,19 @@ export class BookingService {
       guestCount: data.guestCount,
       notes: data.notes,
     });
+
+    // Automation: generate cleaning task for confirmed bookings
+    const effectiveStatus = data.status || 'CONFIRMED';
+    if (effectiveStatus === 'CONFIRMED') {
+      try {
+        await CleaningTaskService.createFromBooking(newBooking, newBooking._id.toString());
+      } catch {
+        // Non-blocking: log but don't fail the booking creation
+        console.error('[CleaningTask] Failed to auto-create task for booking', newBooking._id);
+      }
+    }
+
+    return newBooking;
   }
 
   /**
@@ -187,9 +201,24 @@ export class BookingService {
     if (data.guestCount !== undefined) updateData.guestCount = data.guestCount;
     if (data.notes !== undefined) updateData.notes = data.notes;
 
-    return Booking.findByIdAndUpdate(id, updateData, { new: true })
+    const updatedBooking = await Booking.findByIdAndUpdate(id, updateData, { new: true })
       .populate('apartment')
       .populate('tenant');
+
+    // Automation: handle cleaning task lifecycle on status changes
+    if (data.status && updatedBooking) {
+      try {
+        if (data.status === 'CONFIRMED' && existingBooking.status !== 'CONFIRMED') {
+          await CleaningTaskService.createFromBooking(updatedBooking, id);
+        } else if (data.status === 'CANCELLED') {
+          await CleaningTaskService.deleteByBooking(id);
+        }
+      } catch {
+        console.error('[CleaningTask] Failed to sync task for booking', id);
+      }
+    }
+
+    return updatedBooking;
   }
 
   /**
