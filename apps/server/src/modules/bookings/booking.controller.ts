@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { BookingService, BookingConflictError, ResourceNotFoundError } from './booking.service';
 import { BookingSchema, BookingBaseSchema } from '@rental/shared';
 import { StatusCodes } from 'http-status-codes';
@@ -24,7 +25,8 @@ export class BookingController {
         });
       }
 
-      const booking = await BookingService.create(validationResult.data);
+      const userId = (req.user as jwt.JwtPayload)?.id;
+      const booking = await BookingService.create(validationResult.data, userId);
       res.status(StatusCodes.CREATED).json(booking);
 
     } catch (error) {
@@ -98,7 +100,8 @@ export class BookingController {
         });
       }
 
-      const booking = await BookingService.update(req.params.id, validationResult.data);
+      const userId = (req.user as jwt.JwtPayload)?.id;
+      const booking = await BookingService.update(req.params.id, validationResult.data, userId);
       if (!booking) {
         return res.status(StatusCodes.NOT_FOUND).json({ message: 'Booking not found' });
       }

@@ -54,12 +54,16 @@ function App() {
         <Route path="/bookings/:id" element={<BookingDetailsPage />} />
         <Route path="/bookings/:id/edit" element={<EditBookingPage />} />
         
+
         {/* Settings Routes (SUPER_ADMIN only — enforced by backend + sidebar) */}
         <Route path="/settings" element={<SettingsLayout />}>
           <Route path="profile" element={<ProfileSettingsPage />} />
           <Route path="general" element={<GeneralSettingsPage />} />
           <Route path="staff" element={<StaffSettingsPage />} />
         </Route>
+
+        {/* Housekeeping (Admin view of cleaning tasks) */}
+        <Route path="/housekeeping" element={<CleaningTasksPage />} />
         
       </Route>
 

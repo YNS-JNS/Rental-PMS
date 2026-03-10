@@ -78,6 +78,40 @@ export class CleaningTaskService {
   }
 
   /**
+   * Manually create a cleaning task (Admin / Super Admin).
+   * Not linked to a booking — for ad-hoc cleaning needs.
+   */
+  static async createManual(data: {
+    apartmentId: string;
+    dueDate: string;
+    assignedTo?: string;
+    notes?: string;
+  }, actorUserId: string): Promise<ICleaningTaskDocument> {
+    // Validate assignedTo is a real CLEANER if provided
+    if (data.assignedTo) {
+      const cleaner = await User.findById(data.assignedTo);
+      if (!cleaner) throw new Error('User not found');
+      if (cleaner.role !== 'CLEANER') throw new Error('Target user is not a CLEANER');
+    }
+
+    return CleaningTask.create({
+      apartment: data.apartmentId,
+      assignedTo: data.assignedTo || null,
+      status: CleaningTaskStatus.TO_DO,
+      dueDate: new Date(data.dueDate),
+      notes: data.notes,
+      history: [
+        {
+          status: CleaningTaskStatus.TO_DO,
+          changedBy: actorUserId,
+          changedAt: new Date(),
+          note: 'Task manually created',
+        },
+      ],
+    });
+  }
+
+  /**
    * List all cleaning tasks with optional filters.
    */
   static async findAll(filters: {
