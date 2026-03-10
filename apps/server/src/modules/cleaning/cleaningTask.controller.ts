@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { CleaningTaskService, InvalidStatusTransitionError, ForbiddenOperationError } from './cleaningTask.service';
-import { UpdateCleaningStatusSchema, AssignCleanerSchema } from '@rental/shared';
+import { UpdateCleaningStatusSchema, AssignCleanerSchema, CreateCleaningTaskSchema, UserRole } from '@rental/shared';
 
 /**
  * CleaningTask Controller
@@ -27,6 +27,36 @@ export const CleaningTaskController = {
       res.status(200).json({ success: true, data: tasks });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to fetch cleaning tasks' });
+    }
+  },
+
+  /**
+   * POST /api/cleaning-tasks
+   * Manually create a cleaning task (Admin+ only).
+   */
+  createTask: async (req: Request, res: Response) => {
+    try {
+      const validation = CreateCleaningTaskSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: validation.error.flatten().fieldErrors,
+        });
+      }
+
+      const user = req.user as jwt.JwtPayload;
+      const task = await CleaningTaskService.createManual(validation.data, user.id);
+
+      res.status(201).json({ success: true, data: task });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'User not found') {
+        return res.status(404).json({ success: false, message: error.message });
+      }
+      if (error instanceof Error && error.message === 'Target user is not a CLEANER') {
+        return res.status(422).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: 'Failed to create cleaning task' });
     }
   },
 
@@ -60,6 +90,12 @@ export const CleaningTaskController = {
         return res.status(404).json({ success: false, message: 'Cleaning task not found' });
       }
 
+      // RBAC: CLEANER can only view tasks assigned to them
+      const user = req.user as jwt.JwtPayload;
+      if (user.role === UserRole.CLEANER && task.assignedTo?.toString() !== user.id) {
+        return res.status(403).json({ success: false, message: 'Access denied: task not assigned to you' });
+      }
+
       res.status(200).json({ success: true, data: task });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to fetch cleaning task' });
@@ -83,6 +119,17 @@ export const CleaningTaskController = {
 
       const user = req.user as jwt.JwtPayload;
       const { status, note } = validation.data;
+
+      // RBAC: CLEANER can only update tasks assigned to them
+      if (user.role === UserRole.CLEANER) {
+        const existingTask = await CleaningTaskService.findById(req.params.id);
+        if (!existingTask) {
+          return res.status(404).json({ success: false, message: 'CleaningTask not found' });
+        }
+        if (existingTask.assignedTo?.toString() !== user.id) {
+          return res.status(403).json({ success: false, message: 'Access denied: task not assigned to you' });
+        }
+      }
 
       const task = await CleaningTaskService.updateStatus(
         req.params.id,

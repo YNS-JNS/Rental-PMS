@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { LayoutDashboard, Building2, CalendarDays, Users, Settings, DollarSign, UserCog } from 'lucide-react';
+import { LayoutDashboard, Building2, CalendarDays, Users, Settings, DollarSign, UserCog, SprayCan } from 'lucide-react';
 import { RoleGuard } from '@/components/common/RoleGuard';
 import { UserRole } from '@rental/shared';
 
@@ -33,6 +33,12 @@ export function Sidebar({ className }: SidebarProps) {
       title: 'Tenants',
       href: '/tenants',
       icon: Users,
+      roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+    },
+    {
+      title: 'Housekeeping',
+      href: '/housekeeping',
+      icon: SprayCan,
       roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
     },
     {
@@ -71,7 +77,7 @@ export function Sidebar({ className }: SidebarProps) {
                   className={cn(
                     buttonVariants({ variant: 'ghost' }),
                     'w-full justify-start',
-                    (item.href === '/settings' || item.href === '/finance'
+                    (item.href === '/settings' || item.href === '/finance' || item.href === '/housekeeping'
                       ? location.pathname.startsWith(item.href)
                       : location.pathname === item.href)
                       ? 'bg-muted hover:bg-muted'

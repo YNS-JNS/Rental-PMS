@@ -53,6 +53,7 @@ export const bookingsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Booking', id: 'LIST' },
         { type: 'Apartment', id: 'LIST' },
+        { type: 'Cleaning', id: 'LIST' },
       ],
     }),
 
@@ -67,6 +68,7 @@ export const bookingsApiSlice = apiSlice.injectEndpoints({
         { type: 'Booking', id },
         { type: 'Booking', id: 'LIST' },
         { type: 'Apartment', id: 'LIST' },
+        { type: 'Cleaning', id: 'LIST' },
       ],
     }),
 

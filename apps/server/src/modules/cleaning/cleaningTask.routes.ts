@@ -21,12 +21,20 @@ router.get(
   CleaningTaskController.getMyTasks
 );
 
-// List all tasks
+// List all tasks (Admin+ only — Cleaners use /my-tasks)
 router.get(
   '/',
   authenticate,
-  authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CLEANER),
+  authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   CleaningTaskController.getAll
+);
+
+// Create a task manually (Admin+ only)
+router.post(
+  '/',
+  authenticate,
+  authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  CleaningTaskController.createTask
 );
 
 // Get single task

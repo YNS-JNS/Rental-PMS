@@ -1,56 +1,49 @@
 # Project Memory
 
 ## Last Updated
-2026-03-04
+2026-03-09
 
 ---
 
-## Recent Changes — Currency Formatting & Display Standardization
+## Current Branch
+`feat/smart-housekeeping-backend` — Implementation of Phase 12
+
+---
+
+## Recent Changes — Smart Housekeeping & Turnover Management (Phase 12)
 
 ### Architecture Decisions
 
-1. **Unified formatting module** at `apps/client/src/lib/format.ts`
-   - `formatCurrency(amount, currency?, locale?)` — full precision for tables, modals, detail views
-   - `formatDisplayValue(raw, options?)` — abbreviated KPI display (K/M/B suffix)
-   - Shared `DEFAULT_LOCALE = 'fr-MA'`, `DEFAULT_CURRENCY = 'MAD'` as fallbacks
+1. **Dedicated CleaningTask Entity**: Separated cleaning from Booking. Housekeeping now has its own lifecycle, assignment capability, and immutable history.
+2. **Automated Lifecycle Hooks**: Integrated directly into `BookingService`.
+   - `CONFIRMED` booking → Auto-creates `CleaningTask`.
+   - `CANCELLED` booking → Auto-deletes `CleaningTask`.
+3. **Immutable History Pattern**: Status transitions are logged in an append-only `history[]` array. Transitions to backward states (e.g., `DONE -> TO_DO`) are restricted to `ADMIN` or `SUPER_ADMIN` at the service layer.
+4. **Denormalized Apartment Data**: `apartmentId` is stored on `CleaningTask` for performant dashboard queries without requiring deep population through Booking.
 
-2. **`CurrencyText` component** at `apps/client/src/components/common/CurrencyText.tsx`
-   - Splits numeric amount from currency code, applies standardized de-emphasized styling to the code: `text-base font-medium text-muted-foreground/70`
-   - Uses `useCurrency()` hook internally for dynamic currency
-
-3. **`useCurrency()` hook** at `apps/client/src/hooks/useCurrency.ts`
-   - Reads `defaultCurrency` from `GET /settings` via RTK Query cache (`useGetSettingsQuery`)
-   - Maps currency codes → Intl locales: MAD→fr-MA, USD→en-US, EUR→fr-FR, GBP→en-GB
-   - Falls back to MAD / fr-MA if settings not loaded yet
-
-4. **`StatCard` component** refactored to pure presentational (accepts pre-formatted `value` + `suffix` props)
-
-### Files Modified
+### Files Modified/Created
 
 | File | Change |
 |---|---|
-| `src/lib/format.ts` | **NEW** — merged from `formatCurrency.ts` + `formatDisplayValue.ts` |
-| `src/lib/formatCurrency.ts` | **DELETED** — merged into `format.ts` |
-| `src/lib/formatDisplayValue.ts` | **DELETED** — merged into `format.ts` |
-| `src/components/common/CurrencyText.tsx` | **NEW** — reusable currency display component |
-| `src/hooks/useCurrency.ts` | **NEW** — dynamic currency from settings |
-| `src/features/dashboard/components/StatCard.tsx` | Refactored to pure presentational |
-| `src/pages/dashboard/DashboardPage.tsx` | Uses `formatDisplayValue` + dynamic currency |
-| `src/pages/bookings/BookingsPage.tsx` | `CurrencyText` in table |
-| `src/pages/bookings/BookingDetailsPage.tsx` | `CurrencyText` in 6 locations |
-| `src/pages/bookings/NewBookingPage.tsx` | Dynamic `formatCurrency(amount, currency, locale)` |
-| `src/pages/bookings/EditBookingPage.tsx` | Same |
-| `src/pages/apartments/ApartmentsPage.tsx` | `CurrencyText` in table |
-| `src/pages/apartments/ApartmentDetailsPage.tsx` | `CurrencyText` for monthly rent |
-| `src/features/dashboard/components/ActionList.tsx` | `CurrencyText` for pending payments |
-| `src/features/dashboard/components/RevenueChart.tsx` | Dynamic `formatCurrency` in tooltip |
-| `src/features/finance/components/NewPaymentModal.tsx` | Dynamic `formatCurrency` in toast + dialog |
-| `src/pages/settings/GeneralSettingsPage.tsx` | Currency selector **hidden** (code preserved in comments) |
-
-### Dependencies
-- No new packages added
-- Uses existing: `Intl.NumberFormat`, RTK Query, React.memo, `cn()` utility
+| `packages/shared/src/schemas/cleaning.schema.ts` | **NEW** — Shared types, Zod schemas, & interfaces |
+| `apps/server/src/modules/cleaning/cleaningTask.model.ts` | **NEW** — Mongoose model with embedded history & unique indexed booking |
+| `apps/server/src/modules/cleaning/cleaningTask.service.ts` | **NEW** — Business logic for task lifecycle & automation |
+| `apps/server/src/modules/cleaning/cleaningTask.controller.ts` | **NEW** — HTTP layer with input validation & error mapping |
+| `apps/server/src/modules/cleaning/cleaningTask.routes.ts` | **NEW** — RBAC-protected endpoints at `/api/cleaning-tasks` |
+| `apps/server/src/modules/bookings/booking.service.ts` | Modified — Added `create`/`update` hooks for task sync |
+| `apps/server/src/app.ts` | Modified — Mounted new routes (preserved legacy at `/api/tasks`) |
+| `packages/shared/src/index.ts` | Modified — Exported new cleaning schema |
 
 ### Verification
-- `yarn tsc --noEmit` → ✅ zero errors
-- Feature manually validated by user
+- `yarn tsc --noEmit` on `apps/server` → ✅ Successfully passed (zero new errors)
+- Shared package rebuild → ✅ Successful
+
+---
+
+## Previous Changes — Currency Formatting & Display Standardization
+*(Phase 11 — 2026-03-04)*
+
+### Architecture Decisions
+1. **Unified formatting module** at `apps/client/src/lib/format.ts`
+2. **`CurrencyText` component** at `apps/client/src/components/common/CurrencyText.tsx`
+3. **`useCurrency()` hook** for reading settings from RTK Query cache.

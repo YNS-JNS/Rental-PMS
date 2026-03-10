@@ -84,7 +84,7 @@ export class BookingService {
   /**
    * Create a new booking with availability check
    */
-  static async create(data: BookingInput): Promise<IBookingDocument> {
+  static async create(data: BookingInput, actorUserId: string): Promise<IBookingDocument> {
     // Verify relations exist
     await this.verifyRelationsExist(data.apartmentId, data.tenantId);
 
@@ -115,7 +115,7 @@ export class BookingService {
     const effectiveStatus = data.status || 'CONFIRMED';
     if (effectiveStatus === 'CONFIRMED') {
       try {
-        await CleaningTaskService.createFromBooking(newBooking, newBooking._id.toString());
+        await CleaningTaskService.createFromBooking(newBooking, actorUserId);
       } catch {
         // Non-blocking: log but don't fail the booking creation
         console.error('[CleaningTask] Failed to auto-create task for booking', newBooking._id);
@@ -159,7 +159,8 @@ export class BookingService {
    */
   static async update(
     id: string,
-    data: Partial<BookingInput>
+    data: Partial<BookingInput>,
+    actorUserId: string
   ): Promise<IBookingDocument | null> {
     const existingBooking = await Booking.findById(id);
     if (!existingBooking) return null;
@@ -209,7 +210,7 @@ export class BookingService {
     if (data.status && updatedBooking) {
       try {
         if (data.status === 'CONFIRMED' && existingBooking.status !== 'CONFIRMED') {
-          await CleaningTaskService.createFromBooking(updatedBooking, id);
+          await CleaningTaskService.createFromBooking(updatedBooking, actorUserId);
         } else if (data.status === 'CANCELLED') {
           await CleaningTaskService.deleteByBooking(id);
         }

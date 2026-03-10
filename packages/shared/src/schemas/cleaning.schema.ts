@@ -45,6 +45,19 @@ export const AssignCleanerSchema = z.object({
 
 export type AssignCleanerInput = z.infer<typeof AssignCleanerSchema>;
 
+/**
+ * Schema for manually creating a cleaning task.
+ * Used by POST /api/cleaning-tasks
+ */
+export const CreateCleaningTaskSchema = z.object({
+  apartmentId: z.string().regex(objectIdRegex, { message: 'Invalid apartment ID format' }),
+  dueDate: z.string().min(1, 'Due date is required'),
+  assignedTo: z.string().regex(objectIdRegex, { message: 'Invalid user ID format' }).optional(),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+});
+
+export type CreateCleaningTaskInput = z.infer<typeof CreateCleaningTaskSchema>;
+
 // ============================================
 // Interfaces
 // ============================================
