@@ -39,8 +39,23 @@ const ApartmentSchema = new Schema(
       type: [String], // Array of strings (tags)
       default: [],
     },
-    // Future relations:
-    // landlordId: { type: Schema.Types.ObjectId, ref: 'User' }
+    // --- Phase 13: Financial Model Fields ---
+    rentalType: {
+      type: String,
+      enum: ['OWNED_MONTHLY', 'OWNED_DAILY', 'COMMISSION_BASED'],
+      default: 'OWNED_DAILY',
+      required: true,
+      index: true,
+    },
+    monthlyRent: {
+      type: Number,
+      min: 0,
+    },
+    commissionPercentage: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt

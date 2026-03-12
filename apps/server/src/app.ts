@@ -19,6 +19,7 @@ import userRoutes from './modules/auth/user.routes';
 import staffRoutes from './modules/staff/staff.routes';
 import cleaningRoutes from './modules/cleaning/cleaning.routes';
 import cleaningTaskRoutes from './modules/cleaning/cleaningTask.routes';
+import expenseRoutes from './modules/expenses/expense.routes';
 
 const app: Application = express();
 
@@ -73,5 +74,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/tasks', cleaningRoutes);
 app.use('/api/cleaning-tasks', cleaningTaskRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 export default app;

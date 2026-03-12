@@ -12,6 +12,7 @@ export * from './schemas/booking.schema';
 export * from './schemas/finance.schema';
 export * from './schemas/settings.schema';
 export * from './schemas/cleaning.schema';
+export * from './schemas/expense.schema';
 
 // Export other shared utilities if needed
 export const sayHello = () => 'Hello from Shared Package!';

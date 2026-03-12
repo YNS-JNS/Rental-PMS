@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: Apply this rule when the user asks to design a new feature, structure code, or make changes to backend/frontend services. It contains the project's DNA (Monorepo, React, Node, Zod), directory structure, and architectural standards.
+description: Use when designing features or structuring frontend/backend code. Defines MERN/Zod stack, monorepo directories, and architecture rules.
 ---
 
 # Project Context & Architecture
