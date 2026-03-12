@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ApartmentService } from './apartment.service';
+import { ProfitabilityService, ProfitabilityError } from './profitability.service';
 
 export class ApartmentController {
   
@@ -60,6 +61,41 @@ export class ApartmentController {
       res.status(200).json({ message: 'Apartment deleted successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Error deleting apartment', error });
+    }
+  }
+
+  /**
+   * GET /api/apartments/:id/profitability
+   * Query params: startDate, endDate (defaults to current calendar month)
+   */
+  static async getProfitability(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const now = new Date();
+
+      const startDate = req.query.startDate
+        ? new Date(req.query.startDate as string)
+        : new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const endDate = req.query.endDate
+        ? new Date(req.query.endDate as string)
+        : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return res.status(400).json({ message: 'Invalid date format. Use ISO 8601 (YYYY-MM-DD).' });
+      }
+
+      if (endDate <= startDate) {
+        return res.status(400).json({ message: 'endDate must be after startDate.' });
+      }
+
+      const report = await ProfitabilityService.calculateProfitability(id, startDate, endDate);
+      res.status(200).json(report);
+    } catch (error) {
+      if (error instanceof ProfitabilityError) {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: 'Error calculating profitability', error });
     }
   }
 }

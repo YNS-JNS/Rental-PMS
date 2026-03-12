@@ -71,6 +71,43 @@ router.get('/', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMI
 
 /**
  * @swagger
+ * /api/apartments/{id}/profitability:
+ *   get:
+ *     summary: Get profitability report for an apartment
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The apartment ID
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Period start date (defaults to 1st of current month)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Period end date (defaults to last day of current month)
+ *     responses:
+ *       200:
+ *         description: Profitability report
+ *       404:
+ *         description: Apartment not found
+ *       400:
+ *         description: Invalid date parameters
+ */
+router.get('/:id/profitability', authenticate, authorizeRoles(UserRole.SUPER_ADMIN, UserRole.ADMIN), ApartmentController.getProfitability);
+
+/**
+ * @swagger
  * /api/apartments/{id}:
  *   get:
  *     summary: Get apartment by ID
