@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useGetApartmentQuery } from '@/features/apartments/apartmentsApiSlice';
+import { ProfitabilityCard } from '@/features/apartments/components/ProfitabilityCard';
 import { ArrowLeft, Pencil, MapPin, Building2, CheckCircle2 } from 'lucide-react';
 import { CurrencyText } from '@/components/common/CurrencyText';
 
@@ -14,15 +15,14 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
+} from '@/components/ui/carousel';
 
 export default function ApartmentDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  // Skip query if no ID
+
   const { data: apartment, isLoading, isError } = useGetApartmentQuery(id || '', {
-    skip: !id
+    skip: !id,
   });
 
   if (isLoading) return <div className="p-10 text-center">Loading details...</div>;
@@ -46,8 +46,11 @@ export default function ApartmentDetailsPage() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight">{apartment.name}</h2>
             <div className="flex items-center space-x-2 mt-1">
-               <Badge variant={apartment.status === 'AVAILABLE' ? 'default' : 'secondary'}>
+              <Badge variant={apartment.status === 'AVAILABLE' ? 'default' : 'secondary'}>
                 {apartment.status}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {apartment.rentalType?.replace(/_/g, ' ') ?? 'N/A'}
               </Badge>
               <span className="text-sm text-muted-foreground hidden md:inline-block">
                 ID: {apartment._id}
@@ -67,30 +70,29 @@ export default function ApartmentDetailsPage() {
         <div className="space-y-6">
           <Card className="overflow-hidden border-none shadow-none bg-transparent">
             {hasImages ? (
-               <Carousel className="w-full">
-                 <CarouselContent>
-                   {apartment.images!.map((image, index) => (
-                     <CarouselItem key={index}>
-                       <div className="p-1">
-                         <div className="aspect-video relative overflow-hidden rounded-xl border bg-slate-100">
-                           <img 
-                             src={image} 
-                             alt={`${apartment.name} view ${index + 1}`} 
-                             className="object-cover w-full h-full"
-                           />
-                         </div>
-                       </div>
-                     </CarouselItem>
-                   ))}
-                 </CarouselContent>
-                 {/* Show navigation arrows only if more than 1 image */}
-                 {apartment.images!.length > 1 && (
-                   <>
-                     <CarouselPrevious className="left-2" />
-                     <CarouselNext className="right-2" />
-                   </>
-                 )}
-               </Carousel>
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {apartment.images!.map((image, index) => (
+                    <CarouselItem key={index}>
+                      <div className="p-1">
+                        <div className="aspect-video relative overflow-hidden rounded-xl border bg-slate-100">
+                          <img
+                            src={image}
+                            alt={`${apartment.name} view ${index + 1}`}
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {apartment.images!.length > 1 && (
+                  <>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </>
+                )}
+              </Carousel>
             ) : (
               <div className="aspect-video w-full bg-slate-100 flex flex-col items-center justify-center rounded-xl border text-muted-foreground">
                 <Building2 className="h-16 w-16 mb-2 opacity-20" />
@@ -105,11 +107,29 @@ export default function ApartmentDetailsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Monthly Rent</span>
+                <span className="text-sm text-muted-foreground">Listing Price</span>
                 <span className="text-2xl font-bold text-primary">
                   <CurrencyText amount={apartment.price} className="text-2xl font-bold text-primary" />
                 </span>
               </div>
+              {apartment.monthlyRent && (
+                <>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Monthly Rent</span>
+                    <CurrencyText amount={apartment.monthlyRent} className="font-semibold" />
+                  </div>
+                </>
+              )}
+              {apartment.commissionPercentage !== undefined && (
+                <>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Commission</span>
+                    <span className="font-semibold">{apartment.commissionPercentage}%</span>
+                  </div>
+                </>
+              )}
               <Separator />
               <div className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -122,7 +142,7 @@ export default function ApartmentDetailsPage() {
           </Card>
         </div>
 
-        {/* Right Column: Description & Facilities */}
+        {/* Right Column: Description, Facilities & Profitability */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -130,14 +150,14 @@ export default function ApartmentDetailsPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                {apartment.description || "No description provided."}
+                {apartment.description || 'No description provided.'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Facilities & Amenities</CardTitle>
+              <CardTitle>Facilities &amp; Amenities</CardTitle>
             </CardHeader>
             <CardContent>
               {apartment.facilities && apartment.facilities.length > 0 ? (
@@ -154,6 +174,11 @@ export default function ApartmentDetailsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Profitability Report — only for owned apartments */}
+          {apartment.rentalType !== 'COMMISSION_BASED' && (
+            <ProfitabilityCard apartmentId={apartment._id} />
+          )}
         </div>
       </div>
     </div>

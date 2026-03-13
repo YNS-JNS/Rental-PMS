@@ -1,12 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApartmentInput, ApartmentSchema } from '@rental/shared';
-import { 
-  useGetApartmentQuery, 
-  useUpdateApartmentMutation 
+import {
+  useGetApartmentQuery,
+  useUpdateApartmentMutation,
 } from '@/features/apartments/apartmentsApiSlice';
+import { RentalTypeFields } from '@/features/apartments/components/RentalTypeFields';
 
 // Hooks
 import { useToast } from '@/hooks/use-toast';
@@ -55,10 +56,16 @@ export default function EditApartmentPage() {
       address: '',
       price: 0,
       status: 'AVAILABLE',
+      rentalType: 'OWNED_DAILY',
+      monthlyRent: undefined,
+      commissionPercentage: undefined,
       facilities: [],
       images: [],
     },
   });
+
+  // Watch rentalType to drive conditional field rendering
+  const watchedRentalType = form.watch('rentalType');
 
   // 4. Prefill Form when data arrives
   useEffect(() => {
@@ -69,6 +76,9 @@ export default function EditApartmentPage() {
         address: apartment.address,
         price: apartment.price,
         status: apartment.status,
+        rentalType: apartment.rentalType ?? 'OWNED_DAILY',
+        monthlyRent: apartment.monthlyRent,
+        commissionPercentage: apartment.commissionPercentage,
         facilities: apartment.facilities || [],
         images: apartment.images || [],
       });
@@ -76,32 +86,34 @@ export default function EditApartmentPage() {
   }, [apartment, form]);
 
   // 5. Submission Handler
-  async function onSubmit(values: ApartmentInput) {
+  const onSubmit = useCallback(async (values: ApartmentInput) => {
     if (!id) return;
 
     try {
-      const payload = {
+      const payload: ApartmentInput = {
         ...values,
         price: Number(values.price),
+        // Strip fields not relevant to the selected rentalType
+        monthlyRent: values.rentalType === 'OWNED_MONTHLY' ? Number(values.monthlyRent) : undefined,
+        commissionPercentage: values.rentalType === 'COMMISSION_BASED' ? Number(values.commissionPercentage) : undefined,
       };
 
       await updateApartment({ id, data: payload }).unwrap();
 
       toast({
-        title: "Success",
-        description: "Apartment updated successfully.",
+        title: 'Success',
+        description: 'Apartment updated successfully.',
       });
 
       navigate('/apartments');
-      
-    } catch (err) {
+    } catch {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update apartment.",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update apartment.',
       });
     }
-  }
+  }, [id, updateApartment, navigate, toast]);
 
   // Loading State (Skeleton)
   if (isFetching) {
@@ -111,6 +123,7 @@ export default function EditApartmentPage() {
         <Card>
           <CardHeader><Skeleton className="h-6 w-1/4" /></CardHeader>
           <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-20 w-full" />
@@ -136,7 +149,7 @@ export default function EditApartmentPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              
+
               {/* Name Field */}
               <FormField
                 control={form.control}
@@ -174,13 +187,18 @@ export default function EditApartmentPage() {
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Rent ($)</FormLabel>
+                      <FormLabel>Listing Price ($)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field}
-                          onChange={e => field.onChange(parseFloat(e.target.value))}
-                        />
+                        <Input
+                        type="number"
+                        min="0"
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          field.onChange(isNaN(val) ? '' : val);
+                        }}
+                      />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -212,6 +230,41 @@ export default function EditApartmentPage() {
                 />
               </div>
 
+              {/* Rental Type Field */}
+              <FormField
+                control={form.control}
+                name="rentalType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rental Type</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Reset conditional fields when type changes to avoid stale data
+                        form.setValue('monthlyRent', undefined);
+                        form.setValue('commissionPercentage', undefined);
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select rental type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="OWNED_DAILY">Owned — Daily Rate</SelectItem>
+                        <SelectItem value="OWNED_MONTHLY">Owned — Monthly Rent</SelectItem>
+                        <SelectItem value="COMMISSION_BASED">Commission-Based</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Conditional Financial Fields */}
+              <RentalTypeFields control={form.control} selectedType={watchedRentalType} />
+
               {/* Description Field */}
               <FormField
                 control={form.control}
@@ -220,10 +273,7 @@ export default function EditApartmentPage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        className="resize-none"
-                        {...field} 
-                      />
+                      <Textarea className="resize-none" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -231,9 +281,9 @@ export default function EditApartmentPage() {
               />
 
               <div className="flex justify-end space-x-4">
-                <Button 
-                  variant="outline" 
-                  type="button" 
+                <Button
+                  variant="outline"
+                  type="button"
                   onClick={() => navigate('/apartments')}
                 >
                   Cancel

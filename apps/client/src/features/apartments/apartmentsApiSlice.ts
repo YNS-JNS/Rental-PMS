@@ -1,5 +1,6 @@
 import { apiSlice } from '@/features/api/apiSlice';
-import { IApartment, ApartmentInput } from '@rental/shared';
+import type { IApartment, ApartmentInput } from '@rental/shared';
+import type { ProfitabilityData } from './types/apartment.types';
 
 /**
  * APARTMENTS API SLICE
@@ -8,11 +9,10 @@ import { IApartment, ApartmentInput } from '@rental/shared';
  */
 export const apartmentsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    
+
     // GET All Apartments
     getApartments: builder.query<IApartment[], void>({
       query: () => '/apartments',
-      // Determines which 'tags' are attached to the cached data
       providesTags: (result) =>
         result
           ? [
@@ -28,6 +28,17 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: 'Apartment', id }],
     }),
 
+    // GET Profitability for an Apartment
+    getProfitability: builder.query<ProfitabilityData, string>({
+      query: (id) => `/apartments/${id}/profitability`,
+      // Provide both the specific tag (for targeted invalidation) and
+      // the LIST tag (so broad expense mutations can invalidate all profitability caches).
+      providesTags: (_result, _error, id) => [
+        { type: 'Profitability', id },
+        { type: 'Profitability', id: 'LIST' },
+      ],
+    }),
+
     // CREATE Apartment
     createApartment: builder.mutation<IApartment, ApartmentInput>({
       query: (newApartment) => ({
@@ -35,7 +46,6 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: newApartment,
       }),
-      // Invalidates the 'LIST' tag, causing 'getApartments' to refetch automatically
       invalidatesTags: [{ type: 'Apartment', id: 'LIST' }],
     }),
 
@@ -49,6 +59,8 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Apartment', id },
         { type: 'Apartment', id: 'LIST' },
+        // Invalidate profitability cache when apartment data changes
+        { type: 'Profitability', id },
       ],
     }),
 
@@ -70,6 +82,7 @@ export const apartmentsApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetApartmentsQuery,
   useGetApartmentQuery,
+  useGetProfitabilityQuery,
   useCreateApartmentMutation,
   useUpdateApartmentMutation,
   useDeleteApartmentMutation,

@@ -1,10 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import { ApartmentInput, ApartmentSchema } from '@rental/shared';
 import { useCreateApartmentMutation } from '@/features/apartments/apartmentsApiSlice';
+import { RentalTypeFields } from '@/features/apartments/components/RentalTypeFields';
 
-// Hooks (Correct path for latest Shadcn)
+// Hooks
 import { useToast } from '@/hooks/use-toast';
 
 // UI Components
@@ -32,7 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function NewApartmentPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // RTK Query Mutation
   const [createApartment, { isLoading }] = useCreateApartmentMutation();
 
@@ -44,38 +46,45 @@ export default function NewApartmentPage() {
       description: '',
       address: '',
       price: 0,
-      status: 'AVAILABLE', // Default value is handled here explicitly
-      facilities: [], 
-      images: [],     
+      status: 'AVAILABLE',
+      rentalType: 'OWNED_DAILY',
+      monthlyRent: undefined,
+      commissionPercentage: undefined,
+      facilities: [],
+      images: [],
     },
   });
 
+  // Watch rentalType to drive conditional field rendering
+  const watchedRentalType = form.watch('rentalType');
+
   // 2. Submission Handler
-  async function onSubmit(values: ApartmentInput) {
+  const onSubmit = useCallback(async (values: ApartmentInput) => {
     try {
-      // Ensure price is a number (HTML inputs usually return strings)
-      const payload = {
+      const payload: ApartmentInput = {
         ...values,
         price: Number(values.price),
+        // Clear fields not relevant to the selected rentalType
+        monthlyRent: values.rentalType === 'OWNED_MONTHLY' ? Number(values.monthlyRent) : undefined,
+        commissionPercentage: values.rentalType === 'COMMISSION_BASED' ? Number(values.commissionPercentage) : undefined,
       };
 
       await createApartment(payload).unwrap();
 
       toast({
-        title: "Success",
-        description: "Apartment created successfully.",
+        title: 'Success',
+        description: 'Apartment created successfully.',
       });
 
       navigate('/apartments');
-      
-    } catch (err) {
+    } catch {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create apartment. Please check your inputs.",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to create apartment. Please check your inputs.',
       });
     }
-  }
+  }, [createApartment, navigate, toast]);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -93,7 +102,7 @@ export default function NewApartmentPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              
+
               {/* Name Field */}
               <FormField
                 control={form.control}
@@ -134,13 +143,20 @@ export default function NewApartmentPage() {
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Rent ($)</FormLabel>
+                      <FormLabel>Listing Price ($)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="1500" 
+                        <Input
+                          type="number"
+                          placeholder="1500"
+                          min="0"
                           {...field}
-                          onChange={e => field.onChange(parseFloat(e.target.value))}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            // FIX: NaN guard — without this, clearing the field
+                            // writes NaN silently and Zod never shows the error.
+                            field.onChange(isNaN(val) ? '' : val);
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -155,7 +171,7 @@ export default function NewApartmentPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -173,6 +189,44 @@ export default function NewApartmentPage() {
                 />
               </div>
 
+              {/* Rental Type Field */}
+              <FormField
+                control={form.control}
+                name="rentalType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rental Type</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Reset conditional fields when type changes
+                        form.setValue('monthlyRent', undefined);
+                        form.setValue('commissionPercentage', undefined);
+                      }}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select rental type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="OWNED_DAILY">Owned — Daily Rate</SelectItem>
+                        <SelectItem value="OWNED_MONTHLY">Owned — Monthly Rent</SelectItem>
+                        <SelectItem value="COMMISSION_BASED">Commission-Based</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Determines how revenue and profitability are calculated.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Conditional Financial Fields (driven by rentalType) */}
+              <RentalTypeFields control={form.control} selectedType={watchedRentalType} />
+
               {/* Description Field */}
               <FormField
                 control={form.control}
@@ -181,10 +235,10 @@ export default function NewApartmentPage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <Textarea
                         placeholder="Describe the property features, view, etc."
                         className="resize-none"
-                        {...field} 
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -193,9 +247,9 @@ export default function NewApartmentPage() {
               />
 
               <div className="flex justify-end space-x-4">
-                <Button 
-                  variant="outline" 
-                  type="button" 
+                <Button
+                  variant="outline"
+                  type="button"
                   onClick={() => navigate('/apartments')}
                 >
                   Cancel
