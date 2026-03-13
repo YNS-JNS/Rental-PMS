@@ -1,49 +1,40 @@
 # Project Memory
 
 ## Last Updated
-2026-03-09
+2026-03-13
 
 ---
 
 ## Current Branch
-`feat/smart-housekeeping-backend` — Implementation of Phase 12
+`feat/expense-backend` — Implementation of Phase 13
 
 ---
 
-## Recent Changes — Smart Housekeeping & Turnover Management (Phase 12)
+## Recent Changes — Expense Management & Profitability Engine (Phase 13)
 
 ### Architecture Decisions
 
-1. **Dedicated CleaningTask Entity**: Separated cleaning from Booking. Housekeeping now has its own lifecycle, assignment capability, and immutable history.
-2. **Automated Lifecycle Hooks**: Integrated directly into `BookingService`.
-   - `CONFIRMED` booking → Auto-creates `CleaningTask`.
-   - `CANCELLED` booking → Auto-deletes `CleaningTask`.
-3. **Immutable History Pattern**: Status transitions are logged in an append-only `history[]` array. Transitions to backward states (e.g., `DONE -> TO_DO`) are restricted to `ADMIN` or `SUPER_ADMIN` at the service layer.
-4. **Denormalized Apartment Data**: `apartmentId` is stored on `CleaningTask` for performant dashboard queries without requiring deep population through Booking.
+1. **Economic Models Integration**: Enforced 3 specific models (`OWNED_MONTHLY`, `OWNED_DAILY`, `COMMISSION_BASED`) at the schema and service layers.
+2. **Conditional Validation**: Used Zod `superRefine` in shared schemas to ensure `monthlyRent` or `commissionPercentage` are provided based on the selected `rentalType`.
+3. **Expense Module Domain Guard**: Expenses are blocked for `COMMISSION_BASED` apartments as the agency should not incur costs for third-party properties.
+4. **Profitability Service**: A dedicated service calculates net profit using MongoDB aggregation.
+   - `OWNED_MONTHLY`: (Monthly Rent * Months) - Expenses.
+   - `OWNED_DAILY`: (Booking Total) - Expenses.
+   - `COMMISSION_BASED`: (Booking Total * Commission %).
+5. **Route Precedence**: Placed dynamic profitability route before the ID resource route to prevent route matching conflicts in Express.
 
 ### Files Modified/Created
 
 | File | Change |
 |---|---|
-| `packages/shared/src/schemas/cleaning.schema.ts` | **NEW** — Shared types, Zod schemas, & interfaces |
-| `apps/server/src/modules/cleaning/cleaningTask.model.ts` | **NEW** — Mongoose model with embedded history & unique indexed booking |
-| `apps/server/src/modules/cleaning/cleaningTask.service.ts` | **NEW** — Business logic for task lifecycle & automation |
-| `apps/server/src/modules/cleaning/cleaningTask.controller.ts` | **NEW** — HTTP layer with input validation & error mapping |
-| `apps/server/src/modules/cleaning/cleaningTask.routes.ts` | **NEW** — RBAC-protected endpoints at `/api/cleaning-tasks` |
-| `apps/server/src/modules/bookings/booking.service.ts` | Modified — Added `create`/`update` hooks for task sync |
-| `apps/server/src/app.ts` | Modified — Mounted new routes (preserved legacy at `/api/tasks`) |
-| `packages/shared/src/index.ts` | Modified — Exported new cleaning schema |
+| `packages/shared/src/schemas/apartment.schema.ts` | Modified — Added `RentalType` enum & conditional Zod validation |
+| `packages/shared/src/schemas/expense.schema.ts` | **NEW** — Shared expense schema and category enums |
+| `apps/server/src/modules/apartments/apartment.model.ts` | Modified — Added financial model fields |
+| `apps/server/src/modules/apartments/profitability.service.ts` | **NEW** — Financial calculation engine |
+| `apps/server/src/modules/expenses/*` | **NEW MODULE** — Model, Service, Controller, Routes for expense CRUD |
+| `apps/server/src/app.ts` | Modified — Mounted expense routes at `/api/expenses` |
 
 ### Verification
-- `yarn tsc --noEmit` on `apps/server` → ✅ Successfully passed (zero new errors)
-- Shared package rebuild → ✅ Successful
-
----
-
-## Previous Changes — Currency Formatting & Display Standardization
-*(Phase 11 — 2026-03-04)*
-
-### Architecture Decisions
-1. **Unified formatting module** at `apps/client/src/lib/format.ts`
-2. **`CurrencyText` component** at `apps/client/src/components/common/CurrencyText.tsx`
-3. **`useCurrency()` hook** for reading settings from RTK Query cache.
+- `yarn typecheck` on `packages/shared` → ✅ Passed
+- `yarn tsc --noEmit` on `apps/server` → ✅ Passed (1 pre-existing error in settings.service.ts preserved)
+- Git → ✅ Committed and pushed to `feat/expense-backend`

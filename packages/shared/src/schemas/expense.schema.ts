@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { RentalTypeValue } from './apartment.schema';
 
 // ============================================
 // Expense Category Enum
@@ -31,7 +32,12 @@ export type ExpenseInput = z.infer<typeof ExpenseSchema>;
 // Interface for database objects
 export interface IExpense {
   _id: string;
-  apartmentId?: string;
+  apartment?: {
+    _id: string;
+    name: string;
+    address?: string;
+    rentalType?: RentalTypeValue;
+  };
   amount: number;
   date: Date;
   category: ExpenseCategoryType;

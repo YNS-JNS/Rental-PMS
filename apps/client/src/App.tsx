@@ -23,6 +23,7 @@ import ProfileSettingsPage from '@/pages/settings/ProfileSettingsPage';
 import GeneralSettingsPage from '@/pages/settings/GeneralSettingsPage';
 import StaffSettingsPage from '@/pages/settings/StaffSettingsPage';
 import CleaningTasksPage from '@/pages/cleaning/CleaningTasksPage';
+import ExpensesPage from '@/pages/expenses/ExpensesPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 function App() {
@@ -64,6 +65,9 @@ function App() {
 
         {/* Housekeeping (Admin view of cleaning tasks) */}
         <Route path="/housekeeping" element={<CleaningTasksPage />} />
+
+        {/* Expenses */}
+        <Route path="/expenses" element={<ExpensesPage />} />
         
       </Route>
 
