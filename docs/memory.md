@@ -6,35 +6,40 @@
 ---
 
 ## Current Branch
-`feat/expense-backend` — Implementation of Phase 13
+`feat/expense-frontend` — Phase 13 Full Implementation & Bug Fixes
 
 ---
 
 ## Recent Changes — Expense Management & Profitability Engine (Phase 13)
 
-### Architecture Decisions
+### Architecture Decisions (Backend & Frontend)
 
-1. **Economic Models Integration**: Enforced 3 specific models (`OWNED_MONTHLY`, `OWNED_DAILY`, `COMMISSION_BASED`) at the schema and service layers.
-2. **Conditional Validation**: Used Zod `superRefine` in shared schemas to ensure `monthlyRent` or `commissionPercentage` are provided based on the selected `rentalType`.
-3. **Expense Module Domain Guard**: Expenses are blocked for `COMMISSION_BASED` apartments as the agency should not incur costs for third-party properties.
-4. **Profitability Service**: A dedicated service calculates net profit using MongoDB aggregation.
-   - `OWNED_MONTHLY`: (Monthly Rent * Months) - Expenses.
-   - `OWNED_DAILY`: (Booking Total) - Expenses.
-   - `COMMISSION_BASED`: (Booking Total * Commission %).
-5. **Route Precedence**: Placed dynamic profitability route before the ID resource route to prevent route matching conflicts in Express.
+1. **Integrated Financial Models**: Enforced `OWNED_MONTHLY`, `OWNED_DAILY`, and `COMMISSION_BASED` models across the stack.
+2. **Populated Response Reliance**: Refactored `ExpenseDataTable` to read `expense.apartment.name` directly from the API. Removed artificial lookup maps to ensure a single source of truth.
+3. **Controlled Form State**: Enforced explicit `defaultValues` in React Hook Form for conditional fields (monthlyRent, commissionPercentage) to prevent registration and state synchronization bugs.
+4. **Expense Module Domain Guards**: Enforced rules (e.g., zero expenses for commission-based properties) at both Server (Joi/Mongoose) and Client (Zod) levels.
+5. **Profitability Service**: Implemented a standalone calculation engine using MongoDB aggregation to compute net profit per apartment.
+6. **API Response Alignment**: Synchronized RTK Query slices with raw backend JSON responses by removing redundant `transformResponse` layers that were causing "undefined" data issues.
 
 ### Files Modified/Created
 
 | File | Change |
 |---|---|
-| `packages/shared/src/schemas/apartment.schema.ts` | Modified — Added `RentalType` enum & conditional Zod validation |
-| `packages/shared/src/schemas/expense.schema.ts` | **NEW** — Shared expense schema and category enums |
-| `apps/server/src/modules/apartments/apartment.model.ts` | Modified — Added financial model fields |
-| `apps/server/src/modules/apartments/profitability.service.ts` | **NEW** — Financial calculation engine |
-| `apps/server/src/modules/expenses/*` | **NEW MODULE** — Model, Service, Controller, Routes for expense CRUD |
-| `apps/server/src/app.ts` | Modified — Mounted expense routes at `/api/expenses` |
+| `packages/shared/src/schemas/*` | Modified — Consolidated Apartment and Expense schemas with cross-field validation |
+| `apps/server/src/modules/apartments/profitability.service.ts` | **NEW** — Core profitability calculation engine |
+| `apps/server/src/modules/expenses/*` | **NEW MODULE** — Complete backend service for financial tracking |
+| `apps/client/src/features/expenses/*` | **NEW FEATURE** — Redux slices, components, and hooks for expense UI |
+| `apps/client/src/features/apartments/components/ProfitabilityCard.tsx` | **NEW** — Data visualization for property financial performance |
+| `apps/client/src/pages/expenses/ExpensesPage.tsx` | **NEW PAGE** — Central dashboard for expense management |
+
+### Bug Fixes
+
+- **Fix**: Resolved "Objects are not valid as a React child" crash in `ProfitabilityCard` by formatting `period` object to string.
+- **Fix**: Resolved uncontrolled input warnings and value persistence issues in `ApartmentFormFields` via proper RHF registration.
+- **Fix**: Resolved silent table data failure by matching API envelope structures in `expensesApiSlice`.
 
 ### Verification
-- `yarn typecheck` on `packages/shared` → ✅ Passed
-- `yarn tsc --noEmit` on `apps/server` → ✅ Passed (1 pre-existing error in settings.service.ts preserved)
-- Git → ✅ Committed and pushed to `feat/expense-backend`
+- `packages/shared` → ✅ `yarn typecheck` passed
+- `apps/server` & `apps/client` → ✅ `yarn tsc --noEmit` passed (0 errors in client)
+- Git Stage → ✅ Committed and pushed to `feat/expense-frontend`
+- Deployment → ✅ Manual walkthrough verified all flows in dev environment
