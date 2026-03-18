@@ -1,14 +1,37 @@
 import { Request, Response } from 'express';
-import { ExpenseService, ExpenseDomainError } from './expense.service';
+import { ExpenseService, ExpenseDomainError, ExpenseFilters } from './expense.service';
 
 /**
  * Expense Controller
- * HTTP layer — delegates all business logic to ExpenseService.
+ * HTTP transport layer only — delegates all business logic to ExpenseService.
  * Maps domain errors to appropriate HTTP status codes.
  */
 export class ExpenseController {
   /**
    * POST /api/expenses
+   * @swagger
+   * /api/expenses:
+   *   post:
+   *     summary: Create a new expense (Protected)
+   *     description: |
+   *       Creates an expense. If `apartmentId` is omitted, the expense is
+   *       treated as an Agency-Wide Expense (Frais de structure) and
+   *       `expenseType` will be set to `AGENCY` automatically.
+   *       COMMISSION_BASED apartments are rejected with HTTP 400.
+   *     tags: [Expenses]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/ExpenseInput'
+   *     responses:
+   *       201:
+   *         description: Expense created
+   *       400:
+   *         description: Validation or domain error
    */
   static async create(req: Request, res: Response) {
     try {
@@ -24,20 +47,60 @@ export class ExpenseController {
 
   /**
    * GET /api/expenses
-   * Query params: apartmentId, category, startDate, endDate
+   * Query params: apartmentId, category, startDate, endDate, agencyOnly
+   * @swagger
+   * /api/expenses:
+   *   get:
+   *     summary: Get all expenses (filterable)
+   *     description: |
+   *       Returns all expenses. Use `agencyOnly=true` to return only
+   *       Agency-Wide Expenses (Frais de structure).
+   *       Note: `agencyOnly` and `apartmentId` are mutually exclusive.
+   *     tags: [Expenses]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: apartmentId
+   *         schema:
+   *           type: string
+   *         description: Filter by apartment (ignored when agencyOnly=true)
+   *       - in: query
+   *         name: agencyOnly
+   *         schema:
+   *           type: boolean
+   *         description: If true, return only Agency-Wide expenses
+   *       - in: query
+   *         name: category
+   *         schema:
+   *           type: string
+   *           enum: [WATER, ELECTRICITY, GAS, INTERNET, CLEANING, MAINTENANCE, RENOVATION, FURNITURE, SOFTWARE, MARKETING, INSURANCE, ACCOUNTING, LEGAL, OFFICE_SUPPLIES, SALARIES, TRAVEL, EQUIPMENT, TAXES, OTHER]
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *     responses:
+   *       200:
+   *         description: List of expenses
    */
   static async findAll(req: Request, res: Response) {
     try {
-      const { apartmentId, category, startDate, endDate } = req.query;
+      const { apartmentId, category, startDate, endDate, agencyOnly } = req.query;
 
-      const filters: {
-        apartmentId?: string;
-        category?: string;
-        startDate?: Date;
-        endDate?: Date;
-      } = {};
+      const filters: ExpenseFilters = {};
 
-      if (apartmentId) filters.apartmentId = apartmentId as string;
+      if (agencyOnly === 'true') {
+        filters.agencyOnly = true;
+      } else if (apartmentId) {
+        filters.apartmentId = apartmentId as string;
+      }
+
       if (category) filters.category = category as string;
       if (startDate) filters.startDate = new Date(startDate as string);
       if (endDate) filters.endDate = new Date(endDate as string);
@@ -66,6 +129,7 @@ export class ExpenseController {
 
   /**
    * PUT /api/expenses/:id
+   * Pass `apartmentId: null` to convert an expense to an Agency Expense.
    */
   static async update(req: Request, res: Response) {
     try {

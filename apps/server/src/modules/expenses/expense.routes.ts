@@ -16,7 +16,7 @@ const router = Router();
  * @swagger
  * components:
  *   schemas:
- *     Expense:
+ *     ExpenseInput:
  *       type: object
  *       required:
  *         - amount
@@ -25,27 +25,82 @@ const router = Router();
  *       properties:
  *         apartmentId:
  *           type: string
- *           description: MongoDB ObjectId of the linked apartment (optional for agency-wide expenses)
+ *           nullable: true
+ *           description: |
+ *             MongoDB ObjectId of the linked apartment.
+ *             Omit or set to null for Agency-Wide Expenses (Frais de structure).
  *         amount:
  *           type: number
- *           description: Expense amount (positive)
+ *           minimum: 0.01
+ *           description: Expense amount (must be positive)
  *         date:
  *           type: string
  *           format: date
- *           description: Date of the expense
+ *           description: Date the expense was incurred
  *         category:
  *           type: string
- *           enum: [WATER, ELECTRICITY, CLEANING, MAINTENANCE, OTHER]
+ *           enum:
+ *             - WATER
+ *             - ELECTRICITY
+ *             - GAS
+ *             - INTERNET
+ *             - CLEANING
+ *             - MAINTENANCE
+ *             - RENOVATION
+ *             - FURNITURE
+ *             - SOFTWARE
+ *             - MARKETING
+ *             - INSURANCE
+ *             - ACCOUNTING
+ *             - LEGAL
+ *             - OFFICE_SUPPLIES
+ *             - SALARIES
+ *             - TRAVEL
+ *             - EQUIPMENT
+ *             - TAXES
+ *             - OTHER
  *         description:
  *           type: string
- *           description: Optional description of the expense
+ *           description: Optional free-text description
+ *     Expense:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ExpenseInput'
+ *         - type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *             expenseType:
+ *               type: string
+ *               enum: [APARTMENT, AGENCY]
+ *               description: |
+ *                 Derived discriminator set by the server.
+ *                 APARTMENT = linked to a specific property.
+ *                 AGENCY = agency-wide structural expense (Frais de structure).
+ *             apartment:
+ *               type: object
+ *               nullable: true
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 address:
+ *                   type: string
+ *                 rentalType:
+ *                   type: string
+ *             createdAt:
+ *               type: string
+ *               format: date-time
+ *             updatedAt:
+ *               type: string
+ *               format: date-time
  */
 
 /**
  * @swagger
  * /api/expenses:
  *   get:
- *     summary: Get all expenses (filterable by apartmentId, category, date range)
+ *     summary: Get all expenses (filterable by apartmentId, agencyOnly, category, date range)
  *     tags: [Expenses]
  *     security:
  *       - bearerAuth: []
@@ -54,11 +109,17 @@ const router = Router();
  *         name: apartmentId
  *         schema:
  *           type: string
+ *         description: Filter by apartment ID (ignored if agencyOnly=true)
+ *       - in: query
+ *         name: agencyOnly
+ *         schema:
+ *           type: boolean
+ *         description: If true, return only Agency-Wide expenses
  *       - in: query
  *         name: category
  *         schema:
  *           type: string
- *           enum: [WATER, ELECTRICITY, CLEANING, MAINTENANCE, OTHER]
+ *           enum: [WATER, ELECTRICITY, GAS, INTERNET, CLEANING, MAINTENANCE, RENOVATION, FURNITURE, SOFTWARE, MARKETING, INSURANCE, ACCOUNTING, LEGAL, OFFICE_SUPPLIES, SALARIES, TRAVEL, EQUIPMENT, TAXES, OTHER]
  *       - in: query
  *         name: startDate
  *         schema:
@@ -103,6 +164,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Expense details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Expense'
  *       404:
  *         description: Expense not found
  */
@@ -118,6 +183,9 @@ router.get(
  * /api/expenses:
  *   post:
  *     summary: Create a new expense (Protected)
+ *     description: |
+ *       Omit or set apartmentId to null to create an Agency-Wide Expense.
+ *       COMMISSION_BASED apartments are rejected with HTTP 400.
  *     tags: [Expenses]
  *     security:
  *       - bearerAuth: []
@@ -126,10 +194,14 @@ router.get(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Expense'
+ *             $ref: '#/components/schemas/ExpenseInput'
  *     responses:
  *       201:
  *         description: Expense created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Expense'
  *       400:
  *         description: Validation or domain error
  */
@@ -145,6 +217,9 @@ router.post(
  * /api/expenses/{id}:
  *   put:
  *     summary: Update an expense (Protected)
+ *     description: |
+ *       Pass `apartmentId: null` to convert an expense from APARTMENT-type
+ *       to Agency-Wide (AGENCY-type). The apartment reference will be cleared.
  *     tags: [Expenses]
  *     security:
  *       - bearerAuth: []
@@ -159,10 +234,14 @@ router.post(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Expense'
+ *             $ref: '#/components/schemas/ExpenseInput'
  *     responses:
  *       200:
  *         description: Expense updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Expense'
  *       400:
  *         description: Domain error
  *       404:
