@@ -148,7 +148,7 @@ export function useExpenseForm({
           // AGENCY → AGENCY: don't send apartmentId at all
 
           await updateExpense({ id: editTarget._id, data: payload }).unwrap();
-          toast({ title: 'Succès', description: 'Dépense mise à jour.' });
+          toast({ title: 'Success', description: 'Expense updated.' });
         } else {
           // For CREATE: simply omit apartmentId for agency expenses
           const payload: ExpenseInput = {
@@ -160,17 +160,17 @@ export function useExpenseForm({
           };
 
           await createExpense(payload).unwrap();
-          toast({ title: 'Succès', description: 'Dépense enregistrée.' });
+          toast({ title: 'Success', description: 'Expense recorded.' });
         }
 
         onSuccess();
       } catch {
         toast({
           variant: 'destructive',
-          title: 'Erreur',
+          title: 'Error',
           description: isEditMode
-            ? 'Impossible de mettre à jour la dépense.'
-            : 'Impossible d\'enregistrer la dépense.',
+            ? 'Failed to update expense.'
+            : 'Failed to record expense.',
         });
       }
     },

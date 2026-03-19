@@ -114,14 +114,14 @@ export function ExpenseFormDialog({
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
             <DialogTitle>
-              {isEditMode ? 'Modifier la dépense' : 'Enregistrer une dépense'}
+              {isEditMode ? 'Edit Expense' : 'Record Expense'}
             </DialogTitle>
             <DialogDescription>
               {isEditMode
-                ? 'Mettez à jour les informations de cette dépense.'
+                ? 'Update the details of this expense record.'
                 : isAgencyExpense
-                ? 'Enregistrer un frais de structure (agence).'
-                : 'Enregistrer un coût lié à un bien immobilier.'}
+                ? 'Record an agency-wide structural expense.'
+                : 'Record a property-related cost.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -134,7 +134,7 @@ export function ExpenseFormDialog({
                 name="apartmentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bien immobilier</FormLabel>
+                    <FormLabel>Property</FormLabel>
                     <Select
                       value={field.value ?? AGENCY_SENTINEL}
                       onValueChange={(val) => {
@@ -143,7 +143,7 @@ export function ExpenseFormDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner..." />
+                          <SelectValue placeholder="Select..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -152,7 +152,7 @@ export function ExpenseFormDialog({
                           <span className="flex items-center gap-2">
                             <Building2 className="h-3.5 w-3.5 text-violet-600" />
                             <span className="text-violet-700 font-medium">
-                              — Frais de Structure (Agence) —
+                              — Agency-Wide Expense —
                             </span>
                           </span>
                         </SelectItem>
@@ -164,7 +164,7 @@ export function ExpenseFormDialog({
                             // Native title provides tooltip fallback without extra deps
                             <div
                               key={apt._id}
-                              title="Les charges ne s'appliquent pas aux biens sous commission."
+                              title="Expenses do not apply to commission-based properties."
                             >
                               <SelectItem value={apt._id} disabled>
                                 <span className="flex items-center gap-2 text-muted-foreground">
@@ -193,7 +193,7 @@ export function ExpenseFormDialog({
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Montant (€)</FormLabel>
+                      <FormLabel>Amount</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -219,11 +219,11 @@ export function ExpenseFormDialog({
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Catégorie</FormLabel>
+                      <FormLabel>Category</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner..." />
+                            <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -272,13 +272,13 @@ export function ExpenseFormDialog({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (optionnel)</FormLabel>
+                    <FormLabel>Description (optional)</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder={
                           isAgencyExpense
-                            ? 'ex. Abonnement SaaS annuel...'
-                            : 'ex. Remplacement du robinet en salle de bain...'
+                            ? 'e.g. Annual SaaS subscription...'
+                            : 'e.g. Replaced bathroom faucet...'
                         }
                         className="resize-none"
                         rows={3}
@@ -293,16 +293,16 @@ export function ExpenseFormDialog({
 
               <DialogFooter className="pt-2">
                 <Button variant="outline" type="button" onClick={onClose} disabled={isLoading}>
-                  Annuler
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditMode ? 'Enregistrement...' : 'Création...'}
+                      {isEditMode ? 'Saving...' : 'Recording...'}
                     </>
                   ) : (
-                    isEditMode ? 'Sauvegarder' : 'Enregistrer la dépense'
+                    isEditMode ? 'Save Changes' : 'Record Expense'
                   )}
                 </Button>
               </DialogFooter>

@@ -35,7 +35,7 @@ function AgencyExpenseBadge() {
       className="flex items-center gap-1.5 w-fit bg-violet-50 text-violet-700 border-violet-200 font-medium"
     >
       <Building2 className="h-3 w-3" />
-      Frais d&apos;Agence
+      Agency Expense
     </Badge>
   );
 }
@@ -68,9 +68,9 @@ export function ExpenseDataTable({
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
-            <TableHead>Bien / Type</TableHead>
-            <TableHead>Catégorie</TableHead>
-            <TableHead className="text-right">Montant</TableHead>
+            <TableHead>Property / Type</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
             <TableHead className="hidden md:table-cell">Description</TableHead>
             <TableHead className="w-[70px]">Actions</TableHead>
           </TableRow>
@@ -79,7 +79,7 @@ export function ExpenseDataTable({
           {expenses.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                Aucune dépense trouvée.
+                No expenses found.
               </TableCell>
             </TableRow>
           ) : (
@@ -121,14 +121,14 @@ export function ExpenseDataTable({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Ouvrir le menu</span>
+                        <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEdit(expense)}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Modifier
+                        Edit
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -136,7 +136,7 @@ export function ExpenseDataTable({
                         onClick={() => onDelete(expense._id)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Supprimer
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

@@ -30,27 +30,27 @@ interface CategoryOption { value: ExpenseCategoryType; label: string }
 
 const ALL_CATEGORY_OPTIONS: CategoryOption[] = [
   // Apartment-specific
-  { value: 'WATER', label: 'Eau' },
-  { value: 'ELECTRICITY', label: 'Électricité' },
-  { value: 'GAS', label: 'Gaz' },
+  { value: 'WATER', label: 'Water' },
+  { value: 'ELECTRICITY', label: 'Electricity' },
+  { value: 'GAS', label: 'Gas' },
   { value: 'INTERNET', label: 'Internet' },
-  { value: 'CLEANING', label: 'Nettoyage' },
+  { value: 'CLEANING', label: 'Cleaning' },
   { value: 'MAINTENANCE', label: 'Maintenance' },
-  { value: 'RENOVATION', label: 'Rénovation' },
-  { value: 'FURNITURE', label: 'Mobilier' },
+  { value: 'RENOVATION', label: 'Renovation' },
+  { value: 'FURNITURE', label: 'Furniture' },
   // Agency-wide
-  { value: 'SOFTWARE', label: 'Logiciel' },
+  { value: 'SOFTWARE', label: 'Software' },
   { value: 'MARKETING', label: 'Marketing' },
-  { value: 'INSURANCE', label: 'Assurance' },
-  { value: 'ACCOUNTING', label: 'Comptabilité' },
-  { value: 'LEGAL', label: 'Juridique' },
-  { value: 'OFFICE_SUPPLIES', label: 'Fournitures de bureau' },
-  { value: 'SALARIES', label: 'Salaires' },
-  { value: 'TRAVEL', label: 'Déplacements' },
-  { value: 'EQUIPMENT', label: 'Équipement' },
+  { value: 'INSURANCE', label: 'Insurance' },
+  { value: 'ACCOUNTING', label: 'Accounting' },
+  { value: 'LEGAL', label: 'Legal' },
+  { value: 'OFFICE_SUPPLIES', label: 'Office Supplies' },
+  { value: 'SALARIES', label: 'Salaries' },
+  { value: 'TRAVEL', label: 'Travel' },
+  { value: 'EQUIPMENT', label: 'Equipment' },
   { value: 'TAXES', label: 'Taxes' },
   // Catch-all
-  { value: 'OTHER', label: 'Autre' },
+  { value: 'OTHER', label: 'Other' },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────
@@ -101,10 +101,10 @@ export default function ExpensesPage() {
     if (!expenseToDelete) return;
     try {
       await deleteExpense(expenseToDelete).unwrap();
-      toast({ title: 'Dépense supprimée', description: 'L\'enregistrement a été supprimé.' });
+      toast({ title: 'Expense deleted', description: 'The record has been deleted.' });
       setExpenseToDelete(null);
     } catch {
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de supprimer la dépense.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete expense.' });
     }
   }, [expenseToDelete, deleteExpense, toast]);
 
@@ -152,27 +152,27 @@ export default function ExpensesPage() {
   if (isError) {
     return (
       <div className="p-8 text-center text-destructive">
-        Impossible de charger les dépenses. Veuillez réessayer.
+        Failed to load expenses. Please try again.
       </div>
     );
   }
 
   return (
     <>
-      <PageTitle title="Dépenses" />
+      <PageTitle title="Expenses" />
       <div className="space-y-6">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Dépenses</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Expenses</h2>
             <p className="text-muted-foreground">
-              Suivi des coûts de gestion ({expenses?.length ?? 0} enregistrements)
+              Tracking management costs ({expenses?.length ?? 0} records)
             </p>
           </div>
           <Button onClick={handleOpenCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle dépense
+            New Expense
           </Button>
         </div>
 
@@ -187,10 +187,10 @@ export default function ExpensesPage() {
             className={agencyOnly ? 'bg-violet-600 hover:bg-violet-700 text-white' : ''}
           >
             <Building2 className="mr-2 h-4 w-4" />
-            Frais d&apos;Agence uniquement
+            Agency-Wide Only
             {agencyOnly && (
               <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white">
-                Actif
+                Active
               </Badge>
             )}
           </Button>
@@ -205,10 +205,10 @@ export default function ExpensesPage() {
             disabled={agencyOnly}
           >
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Tous les biens" />
+              <SelectValue placeholder="All properties" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Tous les biens</SelectItem>
+              <SelectItem value="_all">All properties</SelectItem>
               {apartments
                 ?.filter((a) => a.rentalType !== 'COMMISSION_BASED')
                 .map((apt) => (
@@ -222,10 +222,10 @@ export default function ExpensesPage() {
           {/* Category filter (all 19 values) */}
           <Select value={categoryFilter} onValueChange={handleCategoryFilter}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Toutes les catégories" />
+              <SelectValue placeholder="All categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Toutes les catégories</SelectItem>
+              <SelectItem value="_all">All categories</SelectItem>
               {ALL_CATEGORY_OPTIONS.map((cat) => (
                 <SelectItem key={cat.value} value={cat.value}>
                   {cat.label}
@@ -242,29 +242,29 @@ export default function ExpensesPage() {
               {agencyOnly ? (
                 <>
                   <Building2 className="h-5 w-5 text-violet-600" />
-                  Frais de Structure (Agence)
+                  Agency Structural Expenses
                 </>
               ) : (
-                'Toutes les dépenses'
+                'All Expenses'
               )}
             </CardTitle>
             <CardDescription>
               {agencyOnly
-                ? 'Affichage des frais de structure non liés à un bien spécifique.'
-                : 'Journal détaillé de tous les coûts de gestion.'}
+                ? 'Displaying structural expenses not linked to a specific property.'
+                : 'Detailed log of all management costs.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {expenses?.length === 0 ? (
               <EmptyState
                 icon={ReceiptText}
-                title={agencyOnly ? 'Aucun frais d\'agence enregistré' : 'Aucune dépense enregistrée'}
+                title={agencyOnly ? 'No agency expenses recorded' : 'No expenses recorded'}
                 description={
                   agencyOnly
-                    ? 'Enregistrez vos frais de structure (logiciels, marketing, etc.).'
-                    : 'Commencez à suivre vos coûts en enregistrant votre première dépense.'
+                    ? 'Record your structural expenses (software, marketing, etc.).'
+                    : 'Start tracking your costs by recording your first expense.'
                 }
-                actionLabel="Nouvelle dépense"
+                actionLabel="New Expense"
                 onAction={handleOpenCreate}
               />
             ) : (
@@ -292,9 +292,9 @@ export default function ExpensesPage() {
         onClose={() => setExpenseToDelete(null)}
         onConfirm={handleDeleteConfirmed}
         loading={isDeleting}
-        title="Supprimer la dépense"
-        description="Êtes-vous sûr de vouloir supprimer cette dépense ? Cette action est irréversible."
-        confirmText="Supprimer"
+        title="Delete Expense"
+        description="Are you sure you want to delete this expense? This action cannot be undone."
+        confirmText="Delete"
         variant="destructive"
       />
     </>

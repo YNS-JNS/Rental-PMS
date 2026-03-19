@@ -41,27 +41,27 @@ const CATEGORY_STYLES: Record<ExpenseCategoryType, string> = {
 
 const CATEGORY_LABELS: Record<ExpenseCategoryType, string> = {
   // Apartment-specific
-  WATER:          'Eau',
-  ELECTRICITY:    'Électricité',
-  GAS:            'Gaz',
+  WATER:          'Water',
+  ELECTRICITY:    'Electricity',
+  GAS:            'Gas',
   INTERNET:       'Internet',
-  CLEANING:       'Nettoyage',
+  CLEANING:       'Cleaning',
   MAINTENANCE:    'Maintenance',
-  RENOVATION:     'Rénovation',
-  FURNITURE:      'Mobilier',
+  RENOVATION:     'Renovation',
+  FURNITURE:      'Furniture',
   // Agency-wide (structural)
-  SOFTWARE:       'Logiciel',
+  SOFTWARE:       'Software',
   MARKETING:      'Marketing',
-  INSURANCE:      'Assurance',
-  ACCOUNTING:     'Comptabilité',
-  LEGAL:          'Juridique',
-  OFFICE_SUPPLIES:'Fournitures',
-  SALARIES:       'Salaires',
-  TRAVEL:         'Déplacements',
-  EQUIPMENT:      'Équipement',
+  INSURANCE:      'Insurance',
+  ACCOUNTING:     'Accounting',
+  LEGAL:          'Legal',
+  OFFICE_SUPPLIES:'Office Supplies',
+  SALARIES:       'Salaries',
+  TRAVEL:         'Travel',
+  EQUIPMENT:      'Equipment',
   TAXES:          'Taxes',
   // Catch-all
-  OTHER:          'Autre',
+  OTHER:          'Other',
 };
 
 /**
