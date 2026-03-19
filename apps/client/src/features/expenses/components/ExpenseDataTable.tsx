@@ -15,10 +15,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Building2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { ExpenseCategoryBadge } from './ExpenseCategoryBadge';
 import { CurrencyText } from '@/components/common/CurrencyText';
+
+// ─── Sub-components (SRP) ──────────────────────────────────────────────────
+
+/**
+ * AgencyExpenseBadge
+ * Displayed in the Apartment column when a row is an Agency-Wide expense.
+ * SRP: single responsibility to render the "Frais d'Agence" visual indicator.
+ */
+function AgencyExpenseBadge() {
+  return (
+    <Badge
+      variant="outline"
+      className="flex items-center gap-1.5 w-fit bg-violet-50 text-violet-700 border-violet-200 font-medium"
+    >
+      <Building2 className="h-3 w-3" />
+      Agency Expense
+    </Badge>
+  );
+}
+
+// ─── Props ─────────────────────────────────────────────────────────────────
 
 interface ExpenseDataTableProps {
   expenses: IExpense[];
@@ -26,23 +48,27 @@ interface ExpenseDataTableProps {
   onDelete: (expenseId: string) => void;
 }
 
+// ─── Component ─────────────────────────────────────────────────────────────
+
 /**
  * ExpenseDataTable
  * Dumb component: receives data and callbacks, renders table with dropdown actions.
+ *
+ * Updated: Apartment column now renders an AgencyExpenseBadge for AGENCY-type
+ * expenses instead of a blank or "General" fallback.
  */
 export function ExpenseDataTable({
   expenses,
   onEdit,
   onDelete,
 }: ExpenseDataTableProps) {
-
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
-            <TableHead>Apartment</TableHead>
+            <TableHead>Property / Type</TableHead>
             <TableHead>Category</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead className="hidden md:table-cell">Description</TableHead>
@@ -53,27 +79,44 @@ export function ExpenseDataTable({
           {expenses.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                No expenses found. Record your first expense to get started.
+                No expenses found.
               </TableCell>
             </TableRow>
           ) : (
             expenses.map((expense) => (
               <TableRow key={expense._id}>
+                {/* Date */}
                 <TableCell className="text-sm text-muted-foreground">
                   {format(new Date(expense.date), 'dd/MM/yyyy')}
                 </TableCell>
+
+                {/* Apartment — agency expenses get a dedicated badge */}
                 <TableCell className="font-medium">
-                  {expense.apartment?.name || 'General'}
+                  {expense.expenseType === 'AGENCY' ? (
+                    <AgencyExpenseBadge />
+                  ) : (
+                    expense.apartment?.name ?? (
+                      <span className="text-muted-foreground italic">—</span>
+                    )
+                  )}
                 </TableCell>
+
+                {/* Category */}
                 <TableCell>
                   <ExpenseCategoryBadge category={expense.category} />
                 </TableCell>
+
+                {/* Amount */}
                 <TableCell className="text-right font-semibold">
                   <CurrencyText amount={expense.amount} />
                 </TableCell>
+
+                {/* Description */}
                 <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-[200px] truncate">
                   {expense.description || '—'}
                 </TableCell>
+
+                {/* Actions */}
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

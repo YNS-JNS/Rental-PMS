@@ -5,33 +5,72 @@ interface ExpenseCategoryBadgeProps {
   category: ExpenseCategoryType;
 }
 
-/** Category-to-colour mapping — centralised here to avoid duplication. */
+// ─── Visual config ────────────────────────────────────────────────────────────
+
+/**
+ * Category-to-colour mapping — all 19 categories.
+ *
+ * Apartment-specific  → blues / greens / ambers
+ * Agency-wide         → purples / indigos
+ * Catch-all           → neutral grey
+ */
 const CATEGORY_STYLES: Record<ExpenseCategoryType, string> = {
-  WATER:       'bg-blue-100 text-blue-800 border-blue-200',
-  ELECTRICITY: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  CLEANING:    'bg-green-100 text-green-800 border-green-200',
-  MAINTENANCE: 'bg-orange-100 text-orange-800 border-orange-200',
-  OTHER:       'bg-gray-100 text-gray-700 border-gray-200',
+  // Apartment-specific
+  WATER:          'bg-blue-100 text-blue-800 border-blue-200',
+  ELECTRICITY:    'bg-yellow-100 text-yellow-800 border-yellow-200',
+  GAS:            'bg-orange-100 text-orange-800 border-orange-200',
+  INTERNET:       'bg-sky-100 text-sky-800 border-sky-200',
+  CLEANING:       'bg-green-100 text-green-800 border-green-200',
+  MAINTENANCE:    'bg-amber-100 text-amber-800 border-amber-200',
+  RENOVATION:     'bg-red-100 text-red-800 border-red-200',
+  FURNITURE:      'bg-lime-100 text-lime-800 border-lime-200',
+  // Agency-wide (structural)
+  SOFTWARE:       'bg-violet-100 text-violet-800 border-violet-200',
+  MARKETING:      'bg-pink-100 text-pink-800 border-pink-200',
+  INSURANCE:      'bg-indigo-100 text-indigo-800 border-indigo-200',
+  ACCOUNTING:     'bg-purple-100 text-purple-800 border-purple-200',
+  LEGAL:          'bg-rose-100 text-rose-800 border-rose-200',
+  OFFICE_SUPPLIES:'bg-teal-100 text-teal-800 border-teal-200',
+  SALARIES:       'bg-cyan-100 text-cyan-800 border-cyan-200',
+  TRAVEL:         'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200',
+  EQUIPMENT:      'bg-slate-100 text-slate-800 border-slate-200',
+  TAXES:          'bg-zinc-100 text-zinc-800 border-zinc-200',
+  // Catch-all
+  OTHER:          'bg-gray-100 text-gray-700 border-gray-200',
 };
 
 const CATEGORY_LABELS: Record<ExpenseCategoryType, string> = {
-  WATER:       'Water',
-  ELECTRICITY: 'Electricity',
-  CLEANING:    'Cleaning',
-  MAINTENANCE: 'Maintenance',
-  OTHER:       'Other',
+  // Apartment-specific
+  WATER:          'Water',
+  ELECTRICITY:    'Electricity',
+  GAS:            'Gas',
+  INTERNET:       'Internet',
+  CLEANING:       'Cleaning',
+  MAINTENANCE:    'Maintenance',
+  RENOVATION:     'Renovation',
+  FURNITURE:      'Furniture',
+  // Agency-wide (structural)
+  SOFTWARE:       'Software',
+  MARKETING:      'Marketing',
+  INSURANCE:      'Insurance',
+  ACCOUNTING:     'Accounting',
+  LEGAL:          'Legal',
+  OFFICE_SUPPLIES:'Office Supplies',
+  SALARIES:       'Salaries',
+  TRAVEL:         'Travel',
+  EQUIPMENT:      'Equipment',
+  TAXES:          'Taxes',
+  // Catch-all
+  OTHER:          'Other',
 };
 
 /**
  * ExpenseCategoryBadge
- * SRP: one job — render a styled badge for a given expense category.
+ * SRP: renders a styled, localised badge for any of the 19 expense categories.
  */
 export function ExpenseCategoryBadge({ category }: ExpenseCategoryBadgeProps) {
   return (
-    <Badge
-      variant="outline"
-      className={CATEGORY_STYLES[category]}
-    >
+    <Badge variant="outline" className={CATEGORY_STYLES[category]}>
       {CATEGORY_LABELS[category]}
     </Badge>
   );

@@ -10,10 +10,8 @@ import type { ExpenseFilters } from '../types/expense.types';
  * EXPENSES API SLICE
  * Injects full CRUD endpoints for expense management into the main API slice.
  *
- * FIX: Profitability cache invalidation now correctly targets both
- * the specific apartment's profitability tag AND the broad LIST tag.
- * The getProfitability query now also provides the LIST tag so that
- * broad invalidations from expense mutations actually trigger refetches.
+ * FIX: agencyOnly=true is now appended to the query string when requested.
+ * agencyOnly and apartmentId are mutually exclusive — agencyOnly takes precedence.
  */
 export const expensesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,8 +20,16 @@ export const expensesApiSlice = apiSlice.injectEndpoints({
     getExpenses: builder.query<IExpense[], ExpenseFilters | void>({
       query: (filters) => {
         const params = new URLSearchParams();
-        if (filters?.apartmentId) params.append('apartmentId', filters.apartmentId);
+
+        if (filters?.agencyOnly) {
+          // agencyOnly supersedes apartmentId filter
+          params.append('agencyOnly', 'true');
+        } else if (filters?.apartmentId) {
+          params.append('apartmentId', filters.apartmentId);
+        }
+
         if (filters?.category) params.append('category', filters.category);
+
         const qs = params.toString();
         return `/expenses${qs ? `?${qs}` : ''}`;
       },
@@ -45,8 +51,6 @@ export const expensesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result) => [
         { type: 'Expense', id: 'LIST' },
-        // Invalidate the specific apartment's profitability (if linked) + LIST
-        // so ProfitabilityCard refetches after any expense mutation.
         ...(result?.apartment?._id
           ? [{ type: 'Profitability' as const, id: result.apartment._id }]
           : []),
@@ -55,7 +59,7 @@ export const expensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // PUT /api/expenses/:id
-    updateExpense: builder.mutation<IExpense, { id: string; data: Partial<ExpenseInput> }>({
+    updateExpense: builder.mutation<IExpense, { id: string; data: Partial<ExpenseInput & { apartmentId: string | null }> }>({
       query: ({ id, data }) => ({
         url: `/expenses/${id}`,
         method: 'PUT',
@@ -77,8 +81,6 @@ export const expensesApiSlice = apiSlice.injectEndpoints({
         url: `/expenses/${id}`,
         method: 'DELETE',
       }),
-      // On delete we don't have the result to know the apartmentId,
-      // so invalidate LIST to catch all cached profitability queries.
       invalidatesTags: (_result, _error, id) => [
         { type: 'Expense', id },
         { type: 'Expense', id: 'LIST' },
