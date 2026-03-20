@@ -1,15 +1,86 @@
 # Project Memory
 
 ## Last Updated
-2026-03-18
+2026-03-20
 
 ---
 
 ## Current Branch
-`feat/agency-expenses-logic` — Phase 14: Agency-Wide Expenses + Smart Frontend Integration
+`feat/agency-expenses-logic` — Phase 15: UI Design System Refactor (in progress on same branch)
 
 ### Previous Branch
 `feat/expense-frontend` — Phase 13 Full Implementation & Bug Fixes (merged)
+
+---
+
+## Recent Changes — Phase 16: Premium UI Polish
+
+### Architecture Decisions
+
+1. **Scroll Lock**: `h-dvh overflow-hidden` on layout root div (not body) — protects Radix UI portals (Dialog, Sheet, Toaster)
+2. **Named Shadows**: `shadow-card`, `shadow-dialog`, `shadow-dropdown`, `shadow-card-hover` in `tailwind.config.js` — Stripe-style multi-layered
+3. **Heading Letter-Spacing**: `h1,h2 { letter-spacing: -0.03em }` globally in CSS `@layer base`
+4. **`page-enter` utility**: `animate-in fade-in slide-in-from-bottom-2 duration-300` wrapping all `<Outlet>` content for route transitions
+5. **Global transition**: `button, a[href]` → `transition-colors duration-150` centralized in `index.css @layer utilities`
+6. **`prefers-reduced-motion`**: Full override block disables all animations/transitions for accessibility
+7. **TablePagination**: New reusable `components/common/TablePagination.tsx` with smart `buildPageRange` ellipsis logic — page state owned by `ExpenseDataTable`
+8. **Client-side pagination**: `PAGE_SIZE = 10`, sliced in `ExpenseDataTable`; comment documents API migration path
+9. **Collapsible filter bar**: `ExpensesPage` filter panel uses `max-h-0 → max-h-40 + opacity` CSS transition; active filter count badge on toggle button
+10. **Shared `ApartmentForm`**: Extracted from `NewApartmentPage` and `EditApartmentPage` — 3 semantic sections (Identity / Business Model / Details) separated by `<Separator>`, sticky muted action bar
+
+### Files Modified (Phase 16 — 9 files)
+
+| File | Change |
+|---|---|
+| `tailwind.config.js` | Named shadows + heading letter-spacing |
+| `src/index.css` | `.page-enter`, global transitions, reduced-motion |
+| `components/layout/ProtectedLayout.tsx` | `h-dvh overflow-hidden` + `overflow-y-auto` main |
+| `components/common/TablePagination.tsx` | NEW — reusable paginator |
+| `features/expenses/components/ExpenseDataTable.tsx` | `overflow-x-auto`, client pagination |
+| `pages/expenses/ExpensesPage.tsx` | Collapsible filter bar |
+| `features/apartments/components/ApartmentForm.tsx` | NEW — shared form |
+| `pages/apartments/NewApartmentPage.tsx` | Slimmed, uses ApartmentForm |
+| `pages/apartments/EditApartmentPage.tsx` | Slimmed, uses ApartmentForm |
+
+### Verification
+- `apps/client` → ✅ `yarn tsc --noEmit` passed (0 errors, 15s)
+
+---
+
+
+
+### Design Direction
+**Aesthetic:** *Utilitarian Precision* — Stripe/Linear-level minimalism. DFII 13/15.
+**Font:** Inter (Google Fonts CDN), with `font-feature-settings: 'cv11' 'ss01'` for premium numeral rendering.
+
+### Architecture Decisions
+
+1. **`--agency` Semantic Token**: Replaced ALL hardcoded `violet-*` classes with `hsl(var(--agency))`. Single source of truth in `index.css` — changing the hue now updates 4 files automatically.
+2. **Complete Token Layer**: Added `--success`, `--warning`, `--info`, `--agency`, `--sidebar` CSS variables with full light/dark variants. Tailwind config extended with matching semantic names.
+3. **Linear Active State**: Sidebar active item uses `border-l-2 border-primary` left accent + `bg-accent text-foreground font-medium` — replaces the weak `bg-muted` pattern.
+4. **Frosted-Glass Header**: `sticky top-0 z-40 bg-background/95 backdrop-blur-sm` — Stripe-style sticky header with translucency.
+5. **Structural Skeleton**: `ExpensesPageSkeleton` simulates the actual page shape (header row, filter bar, 5 table rows) instead of a flat `h-[400px]` block.
+6. **French Labels Fixed**: `PROPERTY_CATEGORIES` and `AGENCY_CATEGORIES` in `ExpenseFormDialog` translated to English (Eau→Water, Électricité→Electricity, etc.).
+7. **`text-destructive` Convention**: All delete/error UI (dropdown items, icons) now use the semantic token — not raw `text-red-600`.
+
+### Files Modified (Phase 15 — 10 files)
+
+| File | Change |
+|---|---|
+| `tailwind.config.js` | `agency`, `success`, `warning`, `info`, `sidebar` tokens + `fontFamily` |
+| `src/index.css` | Inter font, Slate palette, new semantic vars, fixed duplicate body rule |
+| `components/layout/Sidebar.tsx` | Wordmark icon, Linear active state, semantic nav loop |
+| `components/layout/Header.tsx` | Sticky + frosted glass, bg-sidebar Sheet |
+| `components/layout/ProtectedLayout.tsx` | `bg-sidebar` token, Skeleton loader |
+| `components/common/EmptyState.tsx` | Primary-tinted icon, `role="img"`, border-2 dashed |
+| `pages/expenses/ExpensesPage.tsx` | `bg-agency` token, Alert error state, structural skeleton |
+| `features/expenses/components/ExpenseFormDialog.tsx` | French→English labels, `text-agency` token, SelectSeparator |
+| `features/expenses/components/ExpenseDataTable.tsx` | `bg-agency/10` token, `text-destructive`, `rounded-lg` |
+| `features/expenses/components/ExpenseCategoryBadge.tsx` | All 10 agency categories use `bg-agency/10 text-agency` |
+
+### Verification
+- `apps/client` → ✅ `yarn tsc --noEmit` passed (0 errors, exit code 0, 28s)
+- Git → ⏳ Not yet committed (next step)
 
 ---
 
